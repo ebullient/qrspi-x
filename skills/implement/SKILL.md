@@ -27,6 +27,7 @@ Execute `./qrspi/<feature>/plans/plan-phase-N.md` in order. For each step:
 
 ## Implementation Principles
 - Follow the plan exactly - don't add "improvements"
+- Never reference `spec.md`, `plan.md`, phase files, or step numbers in code, comments, or commit messages. They are disposable workspace scaffolding, not part of the product; a comment that cites them rots the moment the workspace is cleaned up or the plan is revised. Say what the code does and why, not which planning artifact asked for it.
 - Make one commit per step by default. If the human asks for one commit covering the whole phase instead, stage each step's changes without committing and make a single commit at the end (see Process, step 6) — never `commit --amend`; it isn't reliably available, and a commit made once at the end needs no revising anyway.
 - Run the verification specified for each step.
 - If a step fails, stop and report the issue
