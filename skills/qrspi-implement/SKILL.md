@@ -35,6 +35,12 @@ Execute `./qrspi/<feature>/plans/plan-phase-N.md` in order. For each step:
 - If a step fails, stop and report the issue
 - If you discover the plan is wrong, stop and explain why
 
+## Revision checks and evidence
+
+Before starting or resuming, validate Spec and Plan input provenance and approval of their exact revisions using the runtime contract. Recheck before each step and after verification; if inputs changed, stop before committing or marking completion. A helper `start` success does not replace this check. Plan changes approved under Changing the Plan must be shown with updated normalized revision identifiers before execution resumes.
+
+For each completed step, report its criterion IDs, verification command or concrete inspection, expected and actual result, and commit SHA (or staged-diff fingerprint in the approved per-phase commit mode). Preserve this factual evidence under `./qrspi/<feature>/verification/` with unique attempt filenames, keyed by step and criterion ID, with the reviewed spec digest and source snapshot. The unattended role reports evidence to its caller for verbatim persistence in the same directory. Do not add evidence to the approved phase plan or overwrite earlier attempts. Never label an unrun check as passed. A skipped or inconclusive required check prevents completion; report it at the human gate.
+
 ## Execution Modes
 The mode sets both the range of steps and where to pause for human approval:
 - Single step: only step N within the current phase — pause after the step
@@ -74,7 +80,7 @@ When the helper is available, run `qrspi-x status`/`start`/`log`/`decision` as e
    - Stage and commit the step's changes, unless the human asked for one commit covering the whole phase instead — then stage without committing; the single commit happens once, after the last step, in step 7 below.
    - Mark as complete `[x]` in the phase file. By default, commit first, so a step marked `[x]` is always committed. In one-commit-for-the-phase mode, mark `[x]` once the step's changes are staged — the resume evidence for that step is the staged diff, not a commit, until the phase's single commit lands.
    - Decisions: When the helper is available, run `qrspi-x decision add --text "<decision>"` to create a record of the decision, otherwise, report it to the human.
-   - Report the result
+   - Report criterion-linked evidence and the runtime decision summary when the mode reaches a human gate
 6. Pause where the execution mode requires.
 7. When all steps in a phase are `[x]`, mark the phase `[x]` in `plan.md`. In one-commit-for-the-phase mode, make that single commit now, covering everything staged since the phase started, naming the phase. Ensure all implementation changes are tracked or committed. If the helper is available, run `qrspi-x log implement --phase <id> --feature <feature> --project <path>`.
 8. Offer a checkpoint review. On yes, hand off to `qrspi-review` — it owns getting the label and resolving scope, with or without the helper.

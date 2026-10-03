@@ -82,6 +82,14 @@ The tooling does not enforce all of these practices. They are what make the proc
 
 **Review the code and diff, not only the plan.** Skim the per-phase plan, inspect the actual diff at each phase boundary, and do one full pass at the end for how the phases fit together.
 
+## Traceable decisions and verification
+
+Specs label acceptance criteria `S1`, `S2`, and so on. Plans map behavior-sized steps to those IDs; implementation records actual verification and recoverable commits; reviews connect each conformance result and supported finding to its requirement. Findings need a reachable scenario and code or reproduction evidence.
+
+Spec and Plan record the input revisions they used. Human approvals and reviews identify exact artifact and code snapshots, including staged or dirty changes. Changed inputs require reassessment before execution or acceptance; progress-marker updates alone do not invalidate plan approval. These checks live in the skills, alongside the existing helper. Older artifacts need a human-reviewed migration that preserves progress and history.
+
+Each gate presents what changed, unresolved questions, tradeoffs, verification evidence, and the specific decision needed, with the full artifact available. See [the runtime contract](docs/runtime.md) for revision and evidence rules.
+
 ## Optional helper
 
 The `qrspi-x` CLI is an optional implementation detail of the workflow. When it is available, the skills call it automatically rather than editing workflow state directly. You normally do not need to invoke the CLI yourself or learn its individual commands.

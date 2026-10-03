@@ -36,7 +36,11 @@ Create `./qrspi/<feature>/spec.md` with:
 - Concrete examples of inputs and outputs
 - Explicit statements about what stays the same
 - No implementation details (no "how", only "what")
-- Testable acceptance criteria
+- Testable acceptance criteria, each labeled with a stable `S<number>` ID
+- `## Inputs` with the paths and SHA-256 digests of the exact request, queries, research, and selected approach used
+- A revision summary naming changed and retired criteria on reruns; never recycle IDs
+
+Example criterion: `S1 — Given an expired token, refresh returns the documented rejection and creates no session.` Keep the ID when refining this requirement; allocate a new ID for a different requirement. Preserve existing IDs before backing up the old spec. The provenance identifies the evidence informing this spec, not approval of its contents.
 
 ## Process
 
@@ -55,6 +59,6 @@ Before writing any spec, confirm that `request.md` captures a clear, agreed-upon
 2. If `spec.md` exists, retain its complete contents and move it to `./qrspi/<feature>/backups/spec-<n>.md`, where `n` is one greater than the highest `n` already present for the `spec` stem, starting at 1 (if the helper is available, `qrspi-x next-file spec --feature <feature> --project <path>` returns this path directly — same result, no need to list `backups/` and compute `n` by hand). Never rename, rotate, or overwrite an existing backup — writing one is always a pure addition. Create `backups/` only when there is something to put in it.
 3. Write to `./qrspi/<feature>/spec.md`
 4. If the helper is available and this is a rerun after a backward jump, note why with `qrspi-x history add --feature <feature> --project <path> --text "<why>"`.
-5. Stop and wait for human review
+5. Present the runtime contract's decision summary and exact spec revision, then stop for human review
 
 Do not create implementation plans. Your job ends when spec.md is written.

@@ -50,3 +50,7 @@ This replaced an allowlist of filenames, which twice blocked a layout the rest o
 The other skills need only `runtime.md`. When editing a canonical file, update its copies in the same change and compare them byte-for-byte. Do not replace bundled links with `../../agents/` paths: those break when a skill is installed independently. No generator or installer script is required for this branch.
 
 Research reruns answer all current questions from current source evidence; backups are for the human, not Research input. Shape alone receives an explicitly selected prior-approach backup. Workflow staleness guidance and the caller/role input contracts must agree about these exceptions.
+
+## Traceability and snapshots
+
+The canonical runtime contract defines stable criterion IDs, provenance, normalized plan approval digests, review snapshots, and gate summaries. Spec/Plan create that metadata; Implement and its role check it and report evidence; Review and its role check snapshot freshness; Workflow and Autoloop enforce it at transitions and resume. Keep those contracts aligned. `verification/` reports are caller/human evidence, never reviewer claims. Markdown metadata does not change helper state or parsed verdict/table formats.

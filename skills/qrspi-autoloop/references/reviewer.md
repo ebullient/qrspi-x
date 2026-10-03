@@ -56,7 +56,7 @@ Work through each systematically:
 
 1. **Spec conformance** — does the code match what spec.md says will change? Every divergence from the spec is a finding, including ones that "seem fine." A divergence from the *plan* that still satisfies the spec is not a finding.
 2. **Correctness** — trace the changed logic. Off-by-one, inverted conditions, wrong operator, state mutated in the wrong order, a branch that can never be reached, a return value nobody checks.
-3. **Edge cases** — for every entry point in scope, whatever form it takes: what happens with absent, empty, maximum-size, concurrent, or malformed input? If not handled explicitly, it's a finding.
+3. **Edge cases** — investigate absent, empty, maximum-size, concurrent, or malformed inputs that can actually reach the changed code. Check upstream validation and language/framework guarantees before reporting a defect. Missing explicit handling alone is not evidence of a bug.
 4. **Error handling** — trace every error path. Is it logged? Surfaced to the caller? Or silently swallowed?
 5. **Test quality** — are tests verifying behavior, or just checking that code runs? A test that passes while the feature is broken is worse than no test.
 6. **Security surface** — input validation, auth checks on every entry point that needs one, injection risks (SQL, shell, path traversal), secrets in logs.
@@ -68,6 +68,14 @@ Work through each systematically:
    - **Idiomatic escape hatches** — unchecked casts, suppressed warnings, disabled lints, and force-unwraps: each one is a claim the compiler could not verify, and needs a reason.
 
    Do not report a construct as a problem merely because another language would spell it differently, and do not impose a style the codebase has not adopted. If the project documents its own conventions, those win over your preferences.
+
+## Evidence and revision discipline
+
+Apply the supplied runtime contract's revision rules. Validate spec/plan provenance before review, capture the scoped snapshot before inspection, and verify it is unchanged before writing a completed verdict. Record it under `## Scope`. Hash every source file you read, including unchanged context in changed files and dependencies, not just the diff. For staged scope read index versions, and do not claim working-tree tests verify different staged content. Stop without PASS if the snapshot is unstable or a required conformance check cannot be established. A stable failing check or source trace can establish MISSING/DIVERGED; unavailable evidence is not permission to invent a defect or claim PRESENT.
+
+Every finding needs a reachable trigger, expected behavior, actual behavior, and supporting file/line source trace or reproducible check. Give findings IDs (`F1`, ...) and link applicable acceptance IDs; for general correctness/security/scope issues without a spec criterion, state the violated contract instead. Explain the causal path, including why upstream guards do not prevent it. A reproduction is useful but not mandatory when a complete source trace establishes the defect. Record check commands and actual results from your own inspection; never copy implementation claims as verification.
+
+Keep speculative concerns and questions under `## Open Questions`, separate from findings and verdict severity. Investigate questions that prevent required conformance verification before returning a verdict; if they cannot be resolved, stop and report the evidence gap. Validated test-coverage findings must name the reachable behavior or regression risk left unchecked. Dedupe supplemental findings by the same evidence standard.
 
 ## Using the project's own review conventions
 
@@ -107,18 +115,36 @@ defined the intended coverage. Note here, one line each, any place the
 implementation reached the spec by a route the plan did not describe — context
 for the human, not a finding, and no effect on the verdict.
 
+Snapshot: <resolved base commit(s), HEAD, exact diff command and SHA-256>
+Spec: <path and SHA-256>
+Plan: <paths and normalized SHA-256 digests>
+Source files read: <changed-file context and dependencies, content digests and index/working-tree origin>
+Working tree/staged status: <relevant scope; QRSPI scaffolding excluded>
+Snapshot verified unchanged: <before verdict publication>
+
 ## Findings
 
 | Severity | Blocking | Category | Location | Description | Suggested Fix |
 |----------|----------|----------|----------|-------------|---------------|
-| HIGH | no | Error handling | `src/sync.ts:142` | Retry loop swallows the final exception, so a permanent failure is reported as success. | Re-throw after the last attempt, or return an explicit failure. |
+| HIGH | yes | Error handling | `src/sync.ts:142` | F1 / S2: On permanent remote failure, the contract requires rejection; the final catch returns success. See F1 evidence below. | Re-throw after the last attempt, or return an explicit failure. |
+
+## Evidence
+
+### F1 / S2
+- Trigger: <reachable inputs/state and entry point>
+- Expected: <spec criterion or established contract>
+- Actual: <observed behavior or complete source trace>
+- Support: <file:line trace or reproduction command and actual result>
+
+## Open Questions
+<Unproven concerns, or None. These do not become findings merely by being listed.>
 
 ## Supplemental Reviews
 
 For each report provided, name its source and summarize how its findings were handled. State `None provided.` when no supplemental report was supplied. This section is a disposition record, not a second findings table; validated findings belong in `## Findings`.
 
 ## Spec Conformance
-PRESENT | MISSING | DIVERGED | NOT IN SCOPE  <behavioral change from spec>
+PRESENT | MISSING | DIVERGED | NOT IN SCOPE  S<id> — <criterion and independently checked evidence, or scope reason>
 ```
 
 `Category` is the name of the review category the finding came from — Spec conformance, Correctness, Edge cases, Error handling, Test quality, Security surface, or Language and idiom — or Scope, for a blocking scope failure. Severity levels: CRITICAL (blocks merge), HIGH (likely bug), MEDIUM (missing coverage or elevated risk), LOW (code quality). Sort findings by severity, CRITICAL first. `Blocking` is `yes` for CRITICAL findings and for spec items marked MISSING or DIVERGED; otherwise `no`.
@@ -133,5 +159,7 @@ Choose the verdict mechanically:
 Do not fix any issues. Do not create PRs.
 
 ## Before you return
+
+If a required check cannot be established, inputs are stale/contaminated, or the snapshot changed, report `Result: STOPPED` with the reason and assigned artifact path. Leave an existing PENDING stub pending; never write a completed verdict to satisfy the output rule. The caller must stop and reassess, not log a verdict or infer success. The remaining completion instructions apply only to a stable, completed review.
 
 Confirm `./qrspi/<feature>/reviews/<label>.md` exists on disk and holds the verdict you reached. If it does not, write it now — you have not finished until it does. Then report to the caller with the artifact path and the verdict line, and nothing else; the caller reads the findings from the file. Your job ends when the verdict artifact is written.

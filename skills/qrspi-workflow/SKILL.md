@@ -78,6 +78,8 @@ Never read or edit `loop-state.json` or `history.jsonl` by hand.
 
 Staleness flows forward: changes to `request.md`, `queries.md`, or `research.md` invalidate `approach.md`, `spec.md`, plan files, and implementation progress; changes to `approach.md` invalidate `spec.md`, plan files, and implementation progress. Existing files do not prove freshness. Run the affected steps forward before using a downstream artifact. A skill may replace its own current artifact in place; Query, Research, Shape, and Spec each back up their previous artifact to `backups/`, and in every case the newest artifact is the authoritative one. Writing a backup does not make anything stale — the rerun that produced it is what drives staleness, and backups are historical only, except the explicit `Prior approach` input used by Shape to preserve a human decision.
 
+Implementation verification reports under `verification/` are implementation evidence for the caller and human; they are not Research inputs or reviewer test claims.
+
 A human may leave other files under `./qrspi/<feature>/` beyond the ones this workflow writes — notes, reference material, an optional `background.md`. These are not general automatic inputs. Shape explicitly reads `background.md` when present; Query and Research never read it. If the human points a compatible step at another artifact, use it only within that role's input contract. To add context to intent, route it through Init; do not silently widen Query or Research inputs.
 
 ## Interactive-only workflow
@@ -91,6 +93,12 @@ When `qrspi-x` is unavailable, continue with human-gated execution:
 - No `qrspi-x` state exists in this mode; there is nothing to create or edit by hand.
 
 ## Orchestrator Behavior
+
+### Revision checks and decision summaries
+
+Before dispatching any downstream step or resuming in either mode, validate the required upstream Spec/Plan provenance when those artifacts exist and recover approval evidence for their exact revisions under the runtime contract. A helper position, completed marker, or old PASS does not establish freshness. Stop and route stale inputs to their owning stage; preserve completed progress while the human assesses what needs rework. Check review snapshot freshness before declaring completion or offering to proceed from its verdict.
+
+At every gate, precede the navigation options below with the runtime decision summary and full artifact link. Include criterion IDs and exact revisions at Spec, Plan, implementation and Review gates. At early discovery gates, use the same summary without inventing acceptance IDs or test results. For autoloop entry, summarize the resolved phases, their behavioral outcomes, risks, verification and approved revisions.
 
 ### At Each Step
 1. In helper-assisted mode, run `status` to read the position; in interactive-only mode, determine the next step from the workflow artifacts (or invoke `qrspi-init` if the workspace is new).

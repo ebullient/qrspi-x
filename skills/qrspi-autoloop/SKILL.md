@@ -54,6 +54,16 @@ Then run `loop start <selector> --feature <feature> --project <path>`. It runs t
 
 Once it succeeds, nothing has been spawned yet. Show the human the resolved `phaseIds` and wait for a clear yes. An explicit prior authorization covering these resolved phases satisfies this gate; do not ask again for the same scope. Any added dependency outside that authorization still needs approval. If the human rejects the scope, run `loop abandon "<reason>" --feature <feature> --project <path>` and start over with a different selector.
 
+## Revision checks and evidence
+
+At entry and resume, validate Spec/Plan input provenance and recover human approval covering their exact revisions and resolved phases. Supply the complete runtime contract and approved revision identifiers to every role. Before each spawn and before logging/advancing, verify those revisions still match (normalizing progress markers only). Missing or stale inputs stop the loop through `loop stop "<revision/evidence gap>" --feature <feature> --project <path>` and hand back; do not change helper state or silently refresh digests.
+
+Persist implementer verification reports verbatim under `./qrspi/<feature>/verification/` with unique attempt filenames; keep step/criterion IDs, commands, actual outcomes, spec digest and source/commit evidence. Never forward these reports as claimed tests to the reviewer. Recovered completion requires that evidence as well as markers/commits; missing evidence must be recovered by independent checks in a fresh context or handed back, not reconstructed as successful results.
+
+Before `log review` and `advance`, compare the review's `## Scope` snapshot with current scoped inputs. Fingerprint source/diff data without returning heavy reads to the orchestrator; use a fresh verifier when needed. Read snapshot metadata as well as verdict/findings. A stale completed review is historical: stop for reassessment instead of overwriting its label or treating helper idempotence as freshness. An unchanged completed review may be recovered and logged without spawning another reviewer. Planned subsequent phases have separate snapshots and do not turn a phase PASS into final integration approval.
+
+Use the runtime decision summary at entry and handback, including affected criteria, actual verification, accumulated conditions, revisions, and the precise decision for the human.
+
 ## Loop state
 
 The helper owns `loop-state.json` for as long as a loop is running; `status` reports it under the top-level `loop` key (`scope`, `phaseIds`, `cycle`, `phaseId`, `checkpoint`, `conditions`, `stoppedReason`) — absent entirely once no loop is running. `loop.checkpoint` is only the **most recent** checkpoint and `loop.conditions` only the **currently open** ones, not the full run history; that full history is durably recorded in `history.jsonl` as each `log review` call happens, and survives after `loop-state.json` is deleted when the loop ends. Read it back with `history read --kind review` — see **Handing back**.
@@ -88,7 +98,7 @@ When it returns:
 
 Run `start review --phase <phaseId> --loop --feature <feature> --project <path>`. The result carries the checkpoint `label` and the phase `diff` command. Use them exactly; never compose a label — the reviewer stops rather than overwrite a finished review, which would strand the loop.
 
-If `./qrspi/<feature>/reviews/<label>.md` does not exist, create it with your file-writing tool containing exactly the line `## Verdict: PENDING`. If it exists, leave it alone. The stub marks the review as launched; the reviewer overwrites it, but refuses any other existing file.
+If `./qrspi/<feature>/reviews/<label>.md` already contains a completed verdict for this recorded checkpoint, validate its snapshot and completion evidence, then recover through `log review` without spawning a reviewer. If stale or incomplete, stop and hand back. Otherwise, if the file is absent, create it containing exactly `## Verdict: PENDING`; leave an existing PENDING stub alone. Spawn only for an absent/pending review. The reviewer overwrites the stub but refuses a completed artifact.
 
 ```
 Spawn a fresh-context subagent with references/reviewer.md for feature: <feature-name>
@@ -99,7 +109,7 @@ Label: <label>
 
 Do not spawn the explainer; it is an opt-in aid for a human who is present.
 
-When it returns, run `log review --label <label> --feature <feature> --project <path>`: the helper reads the verdict from the artifact and that becomes the next `next.action` on your following `status` call. Conditions never trigger a repair; they are reported at the end.
+If the reviewer returns STOPPED, run `loop stop "<reason>" --feature <feature> --project <path>` and hand back without logging a verdict. Otherwise, when it returns, run `log review --label <label> --feature <feature> --project <path>`: the helper reads the verdict from the artifact and that becomes the next `next.action` on your following `status` call. Conditions never trigger a repair; they are reported at the end.
 
 ### `repair`
 
@@ -126,7 +136,7 @@ Go to **Handing back**. If the helper returns an action it has not listed here, 
 
 ## Context discipline
 
-Do not read source files, run diffs, or read review artifacts beyond the verdict and findings table. Put every heavy read in a subagent. The orchestrator holds only scope, verdicts, and state so it can survive to the end of the run.
+Do not read source files, run diffs, or read review artifacts beyond snapshot metadata, the verdict and findings table. Put every heavy read in a subagent. The orchestrator holds only scope, verdicts, and state so it can survive to the end of the run.
 
 ## Resuming
 

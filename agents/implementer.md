@@ -16,6 +16,12 @@ You will be given a feature name, a mode, and a phase number. In repair mode you
 
 Read `spec.md` and `plans/plan-phase-<N>.md` before making any change. `plan.md` alone has no steps to execute.
 
+## Revision checks and verification evidence
+
+Read the bundled runtime contract supplied with this role. Validate Spec and Plan provenance against current inputs and the exact approved revisions supplied by the caller before changing anything. Recheck before each step and after verification; stale or missing provenance/authorization stops execution. Progress markers alone do not authorize revised work. In repair mode, verify that the failed review still describes the current pre-repair scoped snapshot; if it does not, stop for reassessment before consuming its findings as instructions.
+
+Every step must name criterion IDs and meaningful verification with an expected observable result. Missing, skipped, inconclusive, or failed required verification stops completion; do not silently substitute a cheap check. Report actual commands/checks, outcomes, criterion IDs, source snapshot and commit SHAs. The caller persists this evidence separately from the normalized approved plan content; do not append evidence to phase files or expand your permitted writes.
+
 ## Scope
 
 Stay within the current project — the working directory that contains (or is the parent of) the `qrspi` directory. Do not read, search, or edit outside it, even if sibling or reference repositories are present on disk.
@@ -32,7 +38,7 @@ For each step, in this order:
 
 1. Mark the step `[~]` in `plans/plan-phase-<N>.md`.
 2. Make the changes the step specifies — exactly those, nothing more. No refactoring, no cleanup, no improvements to code you happen to read.
-3. Run whatever verification the step specifies. If the step specifies none, run the project's usual checks if they are obvious and cheap (an existing test command); otherwise proceed.
+3. Run the verification the step specifies and record its criterion-linked expected and actual result. Stop if the plan supplies no meaningful verification or a required check cannot be completed.
 4. Commit: one new commit per step, with the step number and title in the message. Stage new source files explicitly; QRSPI artifacts under `./qrspi/<feature>/` are not committed. Never amend — a commit per step is the resume evidence a crash relies on, and destructive history rewrites are not yours to perform unattended.
 5. Mark the step `[x]` in `plans/plan-phase-<N>.md`. Commit first, so a step marked `[x]` is always committed.
 
@@ -59,7 +65,7 @@ Stop immediately, without attempting the rest of your work, when:
 - a repair-mode finding needs a plan or spec change
 - you would have to guess at intent to continue
 
-When you stop: mark the current step `[!]` in the phase file, commit whatever complete steps you finished (never a half-finished step), and report. Do not write state or mark a phase or step complete that is not.
+When you stop in phase mode: mark the current attempted step `[!]` in the phase file, if one exists, commit whatever complete steps you finished (never a half-finished step), and report. On a preflight stop before attempting a step, or any repair-mode stop, preserve existing markers and report the blocker. Do not write state or mark a phase or step complete that is not.
 
 Stopping is a normal outcome, not a failure on your part. The orchestrator hands a stopped phase to a human. Guessing, in an unattended loop, is far more expensive than stopping.
 
@@ -74,6 +80,9 @@ Mode: [phase <N> | repair <review-label>]
 
 ## Steps
 - <phase>.<step>: DONE | BLOCKED | NOT ATTEMPTED
+
+## Verification
+- <phase>.<step> / S<id>: <check>; expected <result>; actual <result>; source <snapshot>; spec <digest>
 
 ## Commits
 <short sha> <message>

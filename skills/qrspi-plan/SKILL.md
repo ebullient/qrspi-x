@@ -35,6 +35,11 @@ The plan is always two layers:
 ```
 ## QRSPI Plan: <feature>
 
+## Inputs
+- Spec: spec.md — SHA-256: <digest>
+- Research: research.md — SHA-256: <digest>
+- Selected approach: approach.md — SHA-256: <digest>, when present
+
 | Phase | Name | Depends On | Description | Steps | Status |
 |-------|------|------------|-------------|-------|--------|
 | 1 | [Short name] | none | [What this phase accomplishes] | 5 | [ ] |
@@ -56,9 +61,11 @@ A phase id is a number, optionally followed by one lowercase letter (`1`, `2`, `
 
 ### Step 1: [Brief description]
 - [ ] Status marker
+- Criteria: S1, S2 — behavior delivered or preserved
 - Files: path/to/file1.ts, path/to/file2.ts
 - Changes: Specific changes to make
-- Tests: How to verify this step
+- Tests: S1 — concrete check and expected observable result
+- Recovery: What this commit establishes and how to revert or resume it safely
 - Risk: [Low/Medium/High] - why
 
 ### Step 2: [Brief description]
@@ -80,7 +87,8 @@ Discovering mid-implementation that the plan is missing a piece of work — a ga
 This is the mechanism behind `qrspi-workflow`'s "Back to Plan" option after a FAIL. Realizing mid-implementation that the plan missed something is an ordinary outcome of doing the work, not a failure to avoid — that's exactly what this exists for.
 
 ## Planning Principles
-- Each step should take 5-15 minutes to implement
+- Size each step around one independently verifiable behavior and a recoverable commit, rather than an estimated duration. Split work that has multiple unrelated outcomes; keep code and its meaningful verification together. Supporting setup must name the criterion it enables and a concrete check of that setup.
+- Map every active spec criterion to one or more steps; make intentional coverage overlap explicit. Never invent a criterion or silently omit one.
 - Steps within a phase should be ordered to minimize breaking changes
 - Include test updates alongside code changes
 - Flag steps that might need extra attention
@@ -94,7 +102,7 @@ This is the full-plan process, for a fresh plan or a ground-up revision. To add 
 
 1. Read `./qrspi/<feature>/spec.md`, `./qrspi/<feature>/research.md`, and `./qrspi/<feature>/approach.md` when Shape was run
 2. If `approach.md` exists, stop unless its `## Decision` section is decided (holds something other than `None.`); the plan must not bypass the Shape decision gate.
-3. Draft the full list of atomic steps, honoring the selected approach when `approach.md` exists
+3. Validate the spec's input provenance against current artifacts and verify approval covers this exact spec revision. Stop on stale or missing provenance/approval; use the runtime migration rule for legacy artifacts. Draft the full list of behavior-sized steps, honoring the selected approach when `approach.md` exists
 4. If total steps > 5: group into phases, each with a clear name and goal; pause and present the proposed phase breakdown to the user for approval before writing files
 5. Once the phase structure is approved (or steps ≤ 5), perform the dependency check for every phase:
    - Ignore the phase's position in the table and identify the concrete inputs it requires from work in another phase.
@@ -103,6 +111,6 @@ This is the full-plan process, for a fresh plan or a ground-up revision. To add 
    - Do not create an edge merely because a phase is listed earlier or because serial execution is more convenient.
 6. Write `./qrspi/<feature>/plan.md` with the phase overview table, then write each `./qrspi/<feature>/plans/plan-phase-N.md`
 7. Plan has no `qrspi-x` backup stem of its own — `plan.md`/`plans/plan-phase-<id>.md` are edited in place, not versioned to `backups/`. If the helper is available and this is a revision, note why with `qrspi-x history add --feature <feature> --project <path> --text "<why>"`. `status`'s `current.phase`/`current.planProgress` read the phase markers directly once implementation begins; nothing needs to be recorded here for that to work.
-8. Stop and wait for human review of the complete plan
+8. Present the decision summary, criterion-to-step coverage, and exact overview/phase revisions; stop for human review of the complete plan. Changing step content or inserting a phase requires reassessment of the affected plan approval while preserving completed markers.
 
 Do not start implementation. Your job ends when all plan files are written.

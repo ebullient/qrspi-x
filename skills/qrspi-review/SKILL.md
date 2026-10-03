@@ -47,6 +47,12 @@ Give the explainer the same scope and label, in a separate fresh context. Do not
 
 Then go to **After the Reviewer Returns**.
 
+## Snapshot and approval checks
+
+Validate spec/plan provenance before launch. Supply the complete bundled runtime contract with the role and the exact approved artifact revision identifiers; these are factual input constraints, not implementation narrative. The reviewer independently captures and verifies the scoped source snapshot. Before logging a returned verdict or offering a transition, compare the recorded `## Scope` snapshot with current inputs. If changed, retain the old review as historical evidence and rerun with a new label against the current revision; do not log a stale PASS. These checks apply to staged/dirty reviews and helper-free execution too.
+
+Use the runtime decision summary at the human gate: affected criterion IDs, evidence-supported findings, unanswered questions, actual verification and its limits, and the precise decision for the recorded snapshot. Approval of a previous revision does not cover revised code or requirements.
+
 ## Reviewer Agent
 
 The reviewer reads `spec.md` as the standard it reviews against and the plan files to establish the boundaries of the review, runs the diff, and writes a verdict to `./qrspi/<feature>/reviews/<label>.md`.
@@ -89,6 +95,8 @@ This review's contribution is narrow — it checks the diff against `spec.md` an
 
 ## After the Reviewer Returns
 
+If the reviewer reports STOPPED, hand back its evidence gap, contamination or stale-input reason. Do not log a verdict or automatically relaunch an unresolved stop. A resumed review requires corrected inputs and a fresh context; a changed snapshot requires a new label.
+
 1. Confirm `./qrspi/<feature>/reviews/<label>.md` exists before anything else. Do not write it yourself from the reviewer's reply: that reply is a verdict line, so the artifact would have no findings table and no Spec Conformance list — and a repair pass reads its fixes from those. Re-spawn the reviewer with the same label and diff, asking it to write the artifact.
 2. Read the verdict the reviewer reports (PASS / PASS WITH CONDITIONS / FAIL).
 3. If the explainer was also spawned, note that `explain/<label>.md` is available as supplementary reading — do not merge its content into the verdict or treat it as part of the review.
@@ -103,4 +111,4 @@ Do not fix issues or create PRs automatically.
 
 ### Accepting fixes without another agent review
 
-When the human explicitly accepts fixes without another agent review, write the next review artifact (the next label from `status`/`next-file`, or the deterministic no-helper label described above) with a `## Verdict: PASS` line and a short note of what was fixed and where. If the helper is available, then run `qrspi-x log review --feature <feature> --project <path> --label <that label>` on the human's behalf. The human's explicit approval is required; the artifact is the durable evidence, and an acceptance recorded only in helper state can be lost during recovery.
+When the human explicitly accepts fixes without another agent review, write the next review artifact (the next label from `status`/`next-file`, or the deterministic no-helper label described above) with a `## Verdict: PASS` line and a short note of what was fixed and where. Include `## Scope` with the current snapshot identifiers required by the runtime contract, affected criterion IDs and findings waived, and an explicit statement that this is human acceptance without a new agent review. Confirm the human's authorization covers those exact revisions before recording it. If the helper is available, then run `qrspi-x log review --feature <feature> --project <path> --label <that label>` on the human's behalf. The human's explicit approval is required; the artifact is the durable evidence, and an acceptance recorded only in helper state can be lost during recovery.
