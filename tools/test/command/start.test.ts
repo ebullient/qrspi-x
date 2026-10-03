@@ -20,7 +20,7 @@ describe("start implement", () => {
     });
 
     function root(): string {
-        return join(project, "qrspi", feature);
+        return join(project, ".qrspi", feature);
     }
 
     it("blocks with dirty-tree when the working tree isn't clean", async () => {
@@ -278,7 +278,7 @@ describe("start review", () => {
     });
 
     function root(): string {
-        return join(project, "qrspi", feature);
+        return join(project, ".qrspi", feature);
     }
 
     it("returns the next review label without --loop", async () => {
@@ -433,7 +433,7 @@ describe("start repair", () => {
     });
 
     function root(): string {
-        return join(project, "qrspi", feature);
+        return join(project, ".qrspi", feature);
     }
 
     it("blocks with no-fail-review when no review exists yet", async () => {

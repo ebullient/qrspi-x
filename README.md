@@ -64,13 +64,13 @@ To start a normal workflow, invoke the workflow skill with a feature name; it wi
 $qrspi-workflow add-refresh-token-rotation
 ```
 
-The workflow creates artifacts under `./qrspi/<feature>/`. These artifacts are disposable scaffolding; the code is the source of truth. Add `qrspi/` to the project's `.gitignore`. If the artifacts are visible to git, they appear as uncommitted work and the helper reports a `dirty-tree` finding on every command. Init checks this and offers to add the entry.
+The workflow creates artifacts under `./.qrspi/<feature>/`. Existing `qrspi/` workspaces need an explicit move to `.qrspi/`; preserve their contents and stop if the destination already exists. Rebuild older helper installations so they use the new location. These artifacts are disposable scaffolding; the code is the source of truth. Add `.qrspi/` to the project's `.gitignore`. If the artifacts are visible to git, they appear as uncommitted work and the helper reports a `dirty-tree` finding on every command. Init checks this and offers to add the entry.
 
-Per-phase plan files live in `./qrspi/<feature>/plans/`, while the `plan.md` overview stays alongside the other feature artifacts. When Query, Research, Shape, or Spec reruns, the artifact it replaces moves to `./qrspi/<feature>/backups/` so no prior version is lost. An optional `background.md` can preserve human-supplied context and prior-art comparisons; it is not authoritative intent and is not automatically given to Query or Research. When Shape runs, `approach.md` records the alternatives, tradeoffs, and human-selected direction before Spec.
+Per-phase plan files live in `./.qrspi/<feature>/plans/`, while the `plan.md` overview stays alongside the other feature artifacts. When Query, Research, Shape, or Spec reruns, the artifact it replaces moves to `./.qrspi/<feature>/backups/` so no prior version is lost. An optional `background.md` can preserve human-supplied context and prior-art comparisons; it is not authoritative intent and is not automatically given to Query or Research. When Shape runs, `approach.md` records the alternatives, tradeoffs, and human-selected direction before Spec.
 
 ### Completion
 
-Once the final review passes, helper-assisted mode may offer to stop tracking the feature as active. This is advisory bookkeeping only; it does not delete the workflow artifacts. Interactive-only mode reports completion without state tracking. The workflow never cleans up `./qrspi/<feature>/` itself; disposing of any artifact there, done or not, is your call.
+Once the final review passes, helper-assisted mode may offer to stop tracking the feature as active. This is advisory bookkeeping only; it does not delete the workflow artifacts. Interactive-only mode reports completion without state tracking. The workflow never cleans up `./.qrspi/<feature>/` itself; disposing of any artifact there, done or not, is your call.
 
 ## How to run this well
 

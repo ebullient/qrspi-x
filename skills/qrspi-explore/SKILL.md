@@ -33,7 +33,7 @@ Using a subagent keeps exploratory reads out of the main conversation.
 
 ## After the Agent Returns
 1. Review its observations, gaps, candidate directions, and open questions.
-2. Stop for human review of `./qrspi/explore/<exploration-name>/explore.md`.
+2. Stop for human review of `./.qrspi/explore/<exploration-name>/explore.md`.
 3. If a direction is worth pursuing, start `qrspi-init` with a specific feature name; optionally provide `explore.md` as context.
 
 Do not write request.md, generate queries, or otherwise start the normal QRSPI flow automatically — Explore only produces the survey.

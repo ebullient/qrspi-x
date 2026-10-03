@@ -31,7 +31,7 @@ Using the settled request, queries, research, and the selected approach when `ap
 7. **Out of Scope**: What explicitly will NOT change?
 
 ## Spec Format
-Create `./qrspi/<feature>/spec.md` with:
+Create `./.qrspi/<feature>/spec.md` with:
 - Clear before/after descriptions for each change
 - Concrete examples of inputs and outputs
 - Explicit statements about what stays the same
@@ -47,8 +47,8 @@ Example criterion: `S1 — Given an expired token, refresh returns the documente
 ### Step 0 — Verify the request is settled
 Before writing any spec, confirm that `request.md` captures a clear, agreed-upon intent:
 
-1. Read `./qrspi/<feature>/request.md`.
-2. Read `./qrspi/<feature>/queries.md` and `./qrspi/<feature>/research.md`.
+1. Read `./.qrspi/<feature>/request.md`.
+2. Read `./.qrspi/<feature>/queries.md` and `./.qrspi/<feature>/research.md`.
 3. If `approach.md` exists, verify that its `## Decision` section is decided (holds something other than `None.`). If not, stop and ask the human to approve or refine the approach.
 4. Check `request.md` for a non-empty `## Open Questions` section — these are Questions for the User from the query cycles that haven't been answered yet. If any remain, **stop**, surface them to the human, and wait for answers; move each answered question to `## Clarifications` with its answer before continuing. Check `research.md`'s `## New Questions` too: if it is non-empty, **stop** and return to Query before writing the spec.
 5. Confirm the request reads as a concrete feature intent, not as a conversational fragment or a list of still-open options. If it is too vague or contradictory to support a behavioral delta, **stop**, describe what is unclear, and wait for the human to refine `request.md`.
@@ -56,8 +56,8 @@ Before writing any spec, confirm that `request.md` captures a clear, agreed-upon
 
 ### Step 1 — Define the behavioral delta
 1. Using the settled `request.md`, `queries.md`, `research.md`, and selected `approach.md` when present, define the behavioral delta
-2. If `spec.md` exists, retain its complete contents and move it to `./qrspi/<feature>/backups/spec-<n>.md`, where `n` is one greater than the highest `n` already present for the `spec` stem, starting at 1 (if the helper is available, `qrspi-x next-file spec --feature <feature> --project <path>` returns this path directly — same result, no need to list `backups/` and compute `n` by hand). Never rename, rotate, or overwrite an existing backup — writing one is always a pure addition. Create `backups/` only when there is something to put in it.
-3. Write to `./qrspi/<feature>/spec.md`
+2. If `spec.md` exists, retain its complete contents and move it to `./.qrspi/<feature>/backups/spec-<n>.md`, where `n` is one greater than the highest `n` already present for the `spec` stem, starting at 1 (if the helper is available, `qrspi-x next-file spec --feature <feature> --project <path>` returns this path directly — same result, no need to list `backups/` and compute `n` by hand). Never rename, rotate, or overwrite an existing backup — writing one is always a pure addition. Create `backups/` only when there is something to put in it.
+3. Write to `./.qrspi/<feature>/spec.md`
 4. If the helper is available and this is a rerun after a backward jump, note why with `qrspi-x history add --feature <feature> --project <path> --text "<why>"`.
 5. Present the runtime contract's decision summary and exact spec revision, then stop for human review
 

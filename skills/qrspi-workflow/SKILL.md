@@ -29,7 +29,7 @@ The helper is recommended for interactive work and required for `autoloop`. Use 
 ## Workflow Phases
 
 ### Optional Pre-Discovery: Explore
-Use `qrspi-explore` when the human doesn't yet know what to build — e.g. surveying what a reference framework provides that isn't yet adapted here. Produces `./qrspi/explore/<exploration-name>/explore.md`: observations, gaps, and candidate directions. Not tied to a specific feature, not part of the phase progression below, and has no `qrspi-x` state of its own — when a direction is chosen, start the normal flow with `qrspi-init` for that feature. Skip this entirely when the feature is already clear.
+Use `qrspi-explore` when the human doesn't yet know what to build — e.g. surveying what a reference framework provides that isn't yet adapted here. Produces `./.qrspi/explore/<exploration-name>/explore.md`: observations, gaps, and candidate directions. Not tied to a specific feature, not part of the phase progression below, and has no `qrspi-x` state of its own — when a direction is chosen, start the normal flow with `qrspi-init` for that feature. Skip this entirely when the feature is already clear.
 
 ### Discovery Phase (Iterative)
 0. **Init** - Capture feature intent (`qrspi-init`)
@@ -80,7 +80,7 @@ Staleness flows forward: changes to `request.md`, `queries.md`, or `research.md`
 
 Implementation verification reports under `verification/` are implementation evidence for the caller and human; they are not Research inputs or reviewer test claims.
 
-A human may leave other files under `./qrspi/<feature>/` beyond the ones this workflow writes — notes, reference material, an optional `background.md`. These are not general automatic inputs. Shape explicitly reads `background.md` when present; Query and Research never read it. If the human points a compatible step at another artifact, use it only within that role's input contract. To add context to intent, route it through Init; do not silently widen Query or Research inputs.
+A human may leave other files under `./.qrspi/<feature>/` beyond the ones this workflow writes — notes, reference material, an optional `background.md`. These are not general automatic inputs. Shape explicitly reads `background.md` when present; Query and Research never read it. If the human points a compatible step at another artifact, use it only within that role's input contract. To add context to intent, route it through Init; do not silently widen Query or Research inputs.
 
 ## Interactive-only workflow
 
@@ -107,19 +107,19 @@ At every gate, precede the navigation options below with the runtime decision su
 4. Present the next-step options. In helper-assisted mode, update navigation through the helper; in interactive-only mode, keep navigation in the conversation. Do not duplicate the completion or history entry written by the skill.
 
 ### After Init Step
-**Prompt:** "Feature intent captured in `./qrspi/<feature>/request.md`. Next steps:
+**Prompt:** "Feature intent captured in `./.qrspi/<feature>/request.md`. Next steps:
 1. **Query** - Generate questions from this intent
 2. **Refine Request** - Edit request.md before continuing
 3. **Cancel** - Stop workflow"
 
 ### After Query Step
-**Prompt:** "Queries generated in `./qrspi/<feature>/queries.md`. Next steps:
+**Prompt:** "Queries generated in `./.qrspi/<feature>/queries.md`. Next steps:
 1. **Research** - Gather facts to answer these questions
 2. **Regenerate Queries** - Rerun Query while preserving still-relevant questions
 3. **Cancel** - Stop workflow"
 
 ### After Research Step
-**Prompt:** "Research complete in `./qrspi/<feature>/research.md`. Next steps:
+**Prompt:** "Research complete in `./.qrspi/<feature>/research.md`. Next steps:
 1. **Query Again** - Research surfaced new questions (iterations: N) — show only when `## New Questions` is non-empty; runs `qrspi-query` in refinement mode
 2. **Shape** - Compare implementation approaches when the direction is not obvious — show only when `## New Questions` is empty.
 3. **Spec** - Proceed directly to define the behavioral delta when the approach is obvious, or after an approved `approach.md`. If choosing Spec directly, helper-assisted mode notes that Shape was skipped with `history add --text "<why>"` — a fact about what happened, not a design decision (`decision add` is for the standing rationale behind a choice, e.g. "we'll never use Shape for features under N files" — see `qrspi-workflow`'s helper-assisted section). Interactive-only mode states the reason to the human.
@@ -127,14 +127,14 @@ At every gate, precede the navigation options below with the runtime decision su
 5. **Cancel** - Stop workflow"
 
 ### After Shape Step
-**Prompt:** "Approach options are in `./qrspi/<feature>/approach.md`. When the human selects an option, replace the `None.` placeholder under `## Decision` with the option and rationale before offering Spec. Then choose:
+**Prompt:** "Approach options are in `./.qrspi/<feature>/approach.md`. When the human selects an option, replace the `None.` placeholder under `## Decision` with the option and rationale before offering Spec. Then choose:
 1. **Spec** - Define the behavioral delta using the selected approach
 2. **Back to Query/Research** - Resolve an evidence gap exposed by shaping
 3. **Refine Shape** - Recompare the approaches
 4. **Cancel** - Stop workflow"
 
 ### After Spec Step
-**Prompt:** "Spec complete in `./qrspi/<feature>/spec.md`. Next steps:
+**Prompt:** "Spec complete in `./.qrspi/<feature>/spec.md`. Next steps:
 1. **Plan** - Break into implementation steps
 2. **Back to Shape** - Reconsider the implementation approach
 3. **Back to Query/Research** - Need more codebase facts (regenerate questions while preserving prior ones, then research them)
@@ -175,7 +175,7 @@ At every gate, precede the navigation options below with the runtime decision su
 
 ### After Final Review
 **Prompt based on verdict:**
-- **PASS**: "Review PASSED. Workflow complete. In helper-assisted mode, stop tracking this feature as active? In interactive-only mode, report completion?" On yes, if the helper is available, run `log park` — this marks the feature inactive for browsing, not a claim that it's finished forever, and nothing later refuses to proceed because of it. `./qrspi/<feature>/` is left as-is either way; cleaning it up is the human's call, not the workflow's.
+- **PASS**: "Review PASSED. Workflow complete. In helper-assisted mode, stop tracking this feature as active? In interactive-only mode, report completion?" On yes, if the helper is available, run `log park` — this marks the feature inactive for browsing, not a claim that it's finished forever, and nothing later refuses to proceed because of it. `./.qrspi/<feature>/` is left as-is either way; cleaning it up is the human's call, not the workflow's.
 - **PASS WITH CONDITIONS**: "Review passed with conditions. Address findings then re-review?"
 - **FAIL**: "Review FAILED. Options: 1) Fix and re-implement 2) Revise plan (often just inserting one phase — see `qrspi-plan`'s Inserting a Phase) 3) Revise spec"
 
@@ -191,7 +191,7 @@ At every gate, precede the navigation options below with the runtime decision su
 
 ## Helper-driven workflow
 
-1. Check whether `./qrspi/<feature>/` exists
+1. Check whether `./.qrspi/<feature>/` exists
 2. If it does not exist: invoke `qrspi-init`; that skill writes `request.md`. There is no helper call for Init — Discovery/Definition steps (Init, Query, Research, Shape, Spec, Plan) have no `qrspi-x` state of their own; the helper's only involvement there is `next-file` for backup naming.
 3. If it exists, ensure that `request.md` captures the feature intent. If `request.md` is missing, route back through `qrspi-init` to capture it and stop. If it exists, this is a resume — go to the resume path below.
 
@@ -208,7 +208,7 @@ After every step transition, the owning skill calls the helper before presenting
 
 ## Interactive-only workflow
 
-1. Check whether `./qrspi/<feature>/` exists
+1. Check whether `./.qrspi/<feature>/` exists
 2. If it does not exist: invoke `qrspi-init`; that skill writes `request.md` and continues without state tracking.
 3. If it exists, ensure that `request.md` captures the feature intent. If `request.md` is missing, route back through `qrspi-init` to capture it and stop. If it exists, this is a resume — determine the next step from the artifacts and plan markers.
 
@@ -227,4 +227,4 @@ After every step transition, the step's artifact and the human's choice are the 
 
 ## Completion
 
-After a final review PASS, helper-assisted mode may offer to stop tracking the feature as active with `log park` (see **Helper-assisted workflow**). Interactive-only mode reports completion without state tracking. The workflow does not clean up `./qrspi/<feature>/` itself, before or after parking — disposing of any artifact there, including the generated ones, is the human's call.
+After a final review PASS, helper-assisted mode may offer to stop tracking the feature as active with `log park` (see **Helper-assisted workflow**). Interactive-only mode reports completion without state tracking. The workflow does not clean up `./.qrspi/<feature>/` itself, before or after parking — disposing of any artifact there, including the generated ones, is the human's call.

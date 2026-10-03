@@ -9,26 +9,26 @@ Start in a new, fresh context with no inherited conversation history. Your input
 ## Inputs
 
 You will be given a feature name, a unique label, optionally a diff command, a phase number, and a checkpoint step. From these, derive artifact paths:
-- Spec: `./qrspi/<feature>/spec.md`
-- Plan overview: `./qrspi/<feature>/plan.md`
-- Phase plan (if phase review): `./qrspi/<feature>/plans/plan-phase-<N>.md`
-- Prior reviews: `./qrspi/<feature>/reviews/`
-- Output: `./qrspi/<feature>/reviews/<label>.md` (use the label exactly as given; it must be a non-empty kebab-case path component)
+- Spec: `./.qrspi/<feature>/spec.md`
+- Plan overview: `./.qrspi/<feature>/plan.md`
+- Phase plan (if phase review): `./.qrspi/<feature>/plans/plan-phase-<N>.md`
+- Prior reviews: `./.qrspi/<feature>/reviews/`
+- Output: `./.qrspi/<feature>/reviews/<label>.md` (use the label exactly as given; it must be a non-empty kebab-case path component)
 - Supplemental review reports (optional): collated reports from other review skills, each covering the same diff
 
 For a mid-phase review, the checkpoint step is the highest step that has been attempted. Treat that explicit input as authoritative; do not infer it from the phase file's markers, which move on as implementation continues.
 
 Read `spec.md` first — it is what you review against. Then read the plan as a scope assist: if a phase number was provided, read `plans/plan-phase-<N>.md`; otherwise (final or unphased review) read `plan.md` and every `plans/plan-phase-*.md`. The plan tells you which spec behaviors this diff was supposed to deliver, which is how you distinguish a behavior that is missing from one that is simply not this phase's job. Do not check the code against the plan's steps.
 
-List `./qrspi/<feature>/reviews/` to note prior reviews. Their findings are background only: review the entire scope you were given regardless, including code a prior checkpoint already covered — fixes made since then, and interactions between phases, need fresh eyes. You may note whether a prior finding is now resolved or still present.
+List `./.qrspi/<feature>/reviews/` to note prior reviews. Their findings are background only: review the entire scope you were given regardless, including code a prior checkpoint already covered — fixes made since then, and interactions between phases, need fresh eyes. You may note whether a prior finding is now resolved or still present.
 
 If supplemental review reports were provided, read them after completing your independent review. They may contain findings from several specialist subagents that another review skill has already collated. Treat them as advisory leads, not as findings that can be copied without checking.
 
-If `./qrspi/<feature>/reviews/<label>.md` already exists with `## Verdict: PENDING`, overwrite that caller-owned stub. Any other existing file is a collision; stop and report it.
+If `./.qrspi/<feature>/reviews/<label>.md` already exists with `## Verdict: PENDING`, overwrite that caller-owned stub. Any other existing file is a collision; stop and report it.
 
 ## Boundaries
 
-Stay within the current project — the working directory that contains (or is the parent of) the `qrspi` directory. Do not read, search, or diff outside it, even if sibling or reference repositories are present on disk, unless the user's explicit diff command or file arguments name another location.
+Stay within the current project — the working directory that contains (or is the parent of) the `.qrspi` directory. Do not read, search, or diff outside it, even if sibling or reference repositories are present on disk, unless the user's explicit diff command or file arguments name another location.
 
 ## Determining scope
 
@@ -41,10 +41,10 @@ Before and after diffing, inspect `git status --short --untracked-files=all`. Lo
 
 | Path | Treatment |
 |------|-----------|
-| Anything under `qrspi/` | Ignore it. Not a product file, never a finding, never blocking, whatever it is named. Read what you need for the review. |
-| Untracked source file outside `qrspi/` | Blocking scope failure. Record a CRITICAL finding in category Scope, name the file under `## Scope`, and do not PASS — it silently leaves the diff you are reviewing. |
+| Anything under `.qrspi/` | Ignore it. Not a product file, never a finding, never blocking, whatever it is named. Read what you need for the review. |
+| Untracked source file outside `.qrspi/` | Blocking scope failure. Record a CRITICAL finding in category Scope, name the file under `## Scope`, and do not PASS — it silently leaves the diff you are reviewing. |
 
-Do not report what you find under `qrspi/`, recognized or not. Skills and agents write artifacts no fixed list could anticipate, humans leave working notes and checklists there, and a neighboring feature's workspace is indistinguishable from a stray file — none of it is yours to police.
+Do not report what you find under `.qrspi/`, recognized or not. Skills and agents write artifacts no fixed list could anticipate, humans leave working notes and checklists there, and a neighboring feature's workspace is indistinguishable from a stray file — none of it is yours to police.
 
 Tracked changes are already in the diff you were given; review them as part of it and do not treat them as a scope problem. Only an untracked file can silently escape the diff, which is why it is the one blocking case.
 
@@ -98,7 +98,7 @@ Do not promote a finding merely because another reviewer reported it. Record dup
 
 ## Output format
 
-Write the verdict to `./qrspi/<feature>/reviews/<label>.md` with the available file-writing tool, using the label exactly as given. The file is the deliverable: the caller records the verdict by reading that artifact, so a verdict that exists only in your reply is lost and the workflow stalls. Do not print the verdict to the caller instead of writing it, and do not defer writing until after you report.
+Write the verdict to `./.qrspi/<feature>/reviews/<label>.md` with the available file-writing tool, using the label exactly as given. The file is the deliverable: the caller records the verdict by reading that artifact, so a verdict that exists only in your reply is lost and the workflow stalls. Do not print the verdict to the caller instead of writing it, and do not defer writing until after you report.
 
 The artifact's content is:
 
@@ -162,4 +162,4 @@ Do not fix any issues. Do not create PRs.
 
 If a required check cannot be established, inputs are stale/contaminated, or the snapshot changed, report `Result: STOPPED` with the reason and assigned artifact path. Leave an existing PENDING stub pending; never write a completed verdict to satisfy the output rule. The caller must stop and reassess, not log a verdict or infer success. The remaining completion instructions apply only to a stable, completed review.
 
-Confirm `./qrspi/<feature>/reviews/<label>.md` exists on disk and holds the verdict you reached. If it does not, write it now — you have not finished until it does. Then report to the caller with the artifact path and the verdict line, and nothing else; the caller reads the findings from the file. Your job ends when the verdict artifact is written.
+Confirm `./.qrspi/<feature>/reviews/<label>.md` exists on disk and holds the verdict you reached. If it does not, write it now — you have not finished until it does. Then report to the caller with the artifact path and the verdict line, and nothing else; the caller reads the findings from the file. Your job ends when the verdict artifact is written.

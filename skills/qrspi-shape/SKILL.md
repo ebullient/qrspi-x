@@ -23,16 +23,16 @@ Helper installation, recovery, and artifact-only fallback are defined in [the ru
 Explore and compare candidate implementation approaches for a settled feature. Shape is an optional, human-gated definition step: it decides how the feature should be approached, but it does not write product code, define the behavioral spec, or create an implementation plan.
 
 The shaper uses all available pre-definition context:
-- `./qrspi/<feature>/request.md` — the settled intent
-- `./qrspi/<feature>/background.md` — optional human context and prior art
-- `./qrspi/<feature>/queries.md` — the questions that framed research
-- `./qrspi/<feature>/research.md` — codebase facts and constraints
+- `./.qrspi/<feature>/request.md` — the settled intent
+- `./.qrspi/<feature>/background.md` — optional human context and prior art
+- `./.qrspi/<feature>/queries.md` — the questions that framed research
+- `./.qrspi/<feature>/research.md` — codebase facts and constraints
 
 1. Verify that fresh-context delegation is available before moving any artifact, then verify that `request.md`, `queries.md`, and `research.md` exist. If any is missing, stop and direct the caller to Init, Query, or Research. `background.md` is optional.
 2. If `research.md` has a non-empty `## New Questions`, stop and return to Query before shaping; do not design around unresolved facts.
-3. If `approach.md` exists, retain its complete contents and move it to `./qrspi/<feature>/backups/approach-<n>.md`, where `n` is one greater than the highest `n` already present for the `approach` stem, starting at 1 (if the helper is available, `qrspi-x next-file approach --feature <feature> --project <path>` returns this path directly — same result, no need to list `backups/` and compute `n` by hand). Never rename, rotate, or overwrite an existing backup — writing one is always a pure addition. Create `backups/` only when there is something to put in it.
+3. If `approach.md` exists, retain its complete contents and move it to `./.qrspi/<feature>/backups/approach-<n>.md`, where `n` is one greater than the highest `n` already present for the `approach` stem, starting at 1 (if the helper is available, `qrspi-x next-file approach --feature <feature> --project <path>` returns this path directly — same result, no need to list `backups/` and compute `n` by hand). Never rename, rotate, or overwrite an existing backup — writing one is always a pure addition. Create `backups/` only when there is something to put in it.
 4. Read [the Shaper role](references/shaper.md) and launch a fresh-context subagent with the role, project root, feature locator, and the four listed input paths. If an approach was moved aside, also pass its exact backup path as `Prior approach`; the role reads that path to preserve the recorded decision and rationale. Do not pass a parent design summary in place of the artifacts.
-5. The agent may read the codebase to validate candidate approaches, but it must write only `./qrspi/<feature>/approach.md`. Its output preserves any prior human decision unless the human explicitly requested reconsideration; changed facts that conflict with the decision are surfaced for a new human gate.
+5. The agent may read the codebase to validate candidate approaches, but it must write only `./.qrspi/<feature>/approach.md`. Its output preserves any prior human decision unless the human explicitly requested reconsideration; changed facts that conflict with the decision are surfaced for a new human gate.
 
 The approach artifact should make the choice reviewable:
 

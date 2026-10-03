@@ -20,7 +20,7 @@ describe("status (no loop active)", () => {
     });
 
     function root(): string {
-        return join(project, "qrspi", feature);
+        return join(project, ".qrspi", feature);
     }
 
     it("reports query at the very start, with no artifacts", async () => {
@@ -213,7 +213,7 @@ describe("status (loop active)", () => {
     });
 
     function root(): string {
-        return join(project, "qrspi", feature);
+        return join(project, ".qrspi", feature);
     }
 
     it("reports loop.* and next.action instead of next.label", async () => {

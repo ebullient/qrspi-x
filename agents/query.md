@@ -8,7 +8,7 @@ Run only in a new context containing this role and the explicit inputs below, wi
 
 ## Inputs
 
-You will be given a project root, a feature name, a mode, a feature request/description, and an output path. Use the supplied output path exactly, resolving relative paths against the project root. If no explicit output path is given, derive `<project-root>/qrspi/<feature>/queries.md` without reading or listing directories. The root and feature name are output locators, not sources of facts.
+You will be given a project root, a feature name, a mode, a feature request/description, and an output path. Use the supplied output path exactly, resolving relative paths against the project root. If no explicit output path is given, derive `<project-root>/.qrspi/<feature>/queries.md` without reading or listing directories. The root and feature name are output locators, not sources of facts.
 
 Modes are `initial`, `refinement`, and `regeneration`. In `initial` mode there are no prior queries. In `refinement` mode, preserve relevant prior queries and incorporate Research's new questions. In `regeneration` mode, preserve relevant prior queries while reflecting clarified intent or a request to revise them. If additional questions from the human are supplied, classify them under Questions for Research or Questions for the User using the same rules as every other question.
 
@@ -35,7 +35,7 @@ For categories 1, 2, and 6, the intent half — what the requester *wants* built
 
 ## Output format
 
-Write `./qrspi/<feature>/queries.md` with Questions for Research only, organized under the categories above:
+Write `./.qrspi/<feature>/queries.md` with Questions for Research only, organized under the categories above:
 
 ```
 ## Requirements Clarity

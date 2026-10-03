@@ -72,7 +72,7 @@ A phase id is a number, optionally followed by one lowercase letter (`1`, `2`, `
 ...
 ```
 
-Phase files live in `./qrspi/<feature>/plans/`; `plan.md` stays in the workspace root. Step numbers are local to each phase file — each phase starts at Step 1. For small plans (≤5 steps total), use a single phase; `plan.md` is still the overview, `plans/plan-phase-1.md` has all steps.
+Phase files live in `./.qrspi/<feature>/plans/`; `plan.md` stays in the workspace root. Step numbers are local to each phase file — each phase starts at Step 1. For small plans (≤5 steps total), use a single phase; `plan.md` is still the overview, `plans/plan-phase-1.md` has all steps.
 
 ## Inserting a Phase
 
@@ -100,7 +100,7 @@ This is the mechanism behind `qrspi-workflow`'s "Back to Plan" option after a FA
 
 This is the full-plan process, for a fresh plan or a ground-up revision. To add one phase to an existing plan without touching the rest, see **Inserting a Phase**, above, instead.
 
-1. Read `./qrspi/<feature>/spec.md`, `./qrspi/<feature>/research.md`, and `./qrspi/<feature>/approach.md` when Shape was run
+1. Read `./.qrspi/<feature>/spec.md`, `./.qrspi/<feature>/research.md`, and `./.qrspi/<feature>/approach.md` when Shape was run
 2. If `approach.md` exists, stop unless its `## Decision` section is decided (holds something other than `None.`); the plan must not bypass the Shape decision gate.
 3. Validate the spec's input provenance against current artifacts and verify approval covers this exact spec revision. Stop on stale or missing provenance/approval; use the runtime migration rule for legacy artifacts. Draft the full list of behavior-sized steps, honoring the selected approach when `approach.md` exists
 4. If total steps > 5: group into phases, each with a clear name and goal; pause and present the proposed phase breakdown to the user for approval before writing files
@@ -109,7 +109,7 @@ This is the full-plan process, for a fresh plan or a ground-up revision. To add 
    - If another phase produces a required input, record that phase's ID in `Depends On` and name the required output in the phase's `Dependencies` section.
    - If the phase can be implemented and reviewed without output from another phase, record `none`.
    - Do not create an edge merely because a phase is listed earlier or because serial execution is more convenient.
-6. Write `./qrspi/<feature>/plan.md` with the phase overview table, then write each `./qrspi/<feature>/plans/plan-phase-N.md`
+6. Write `./.qrspi/<feature>/plan.md` with the phase overview table, then write each `./.qrspi/<feature>/plans/plan-phase-N.md`
 7. Plan has no `qrspi-x` backup stem of its own — `plan.md`/`plans/plan-phase-<id>.md` are edited in place, not versioned to `backups/`. If the helper is available and this is a revision, note why with `qrspi-x history add --feature <feature> --project <path> --text "<why>"`. `status`'s `current.phase`/`current.planProgress` read the phase markers directly once implementation begins; nothing needs to be recorded here for that to work.
 8. Present the decision summary, criterion-to-step coverage, and exact overview/phase revisions; stop for human review of the complete plan. Changing step content or inserting a phase requires reassessment of the affected plan approval while preserving completed markers.
 

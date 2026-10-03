@@ -7,7 +7,7 @@ description: "Use when a trusted QRSPI spec and plan should run unattended for o
 
 ## When to use
 
-Use when a `./qrspi/<feature>/` workspace has an approved spec and plan and you want unattended execution. For human-gated execution, use `qrspi-workflow` or `qrspi-implement`.
+Use when a `./.qrspi/<feature>/` workspace has an approved spec and plan and you want unattended execution. For human-gated execution, use `qrspi-workflow` or `qrspi-implement`.
 
 Read [the runtime contract](references/runtime.md) before running this step. Skill names such as `qrspi-query` identify portable skills; in Codex, invoke them as `$qrspi-query`.
 
@@ -58,7 +58,7 @@ Once it succeeds, nothing has been spawned yet. Show the human the resolved `pha
 
 At entry and resume, validate Spec/Plan input provenance and recover human approval covering their exact revisions and resolved phases. Supply the complete runtime contract and approved revision identifiers to every role. Before each spawn and before logging/advancing, verify those revisions still match (normalizing progress markers only). Missing or stale inputs stop the loop through `loop stop "<revision/evidence gap>" --feature <feature> --project <path>` and hand back; do not change helper state or silently refresh digests.
 
-Persist implementer verification reports verbatim under `./qrspi/<feature>/verification/` with unique attempt filenames; keep step/criterion IDs, commands, actual outcomes, spec digest and source/commit evidence. Never forward these reports as claimed tests to the reviewer. Recovered completion requires that evidence as well as markers/commits; missing evidence must be recovered by independent checks in a fresh context or handed back, not reconstructed as successful results.
+Persist implementer verification reports verbatim under `./.qrspi/<feature>/verification/` with unique attempt filenames; keep step/criterion IDs, commands, actual outcomes, spec digest and source/commit evidence. Never forward these reports as claimed tests to the reviewer. Recovered completion requires that evidence as well as markers/commits; missing evidence must be recovered by independent checks in a fresh context or handed back, not reconstructed as successful results.
 
 Before `log review` and `advance`, compare the review's `## Scope` snapshot with current scoped inputs. Fingerprint source/diff data without returning heavy reads to the orchestrator; use a fresh verifier when needed. Read snapshot metadata as well as verdict/findings. A stale completed review is historical: stop for reassessment instead of overwriting its label or treating helper idempotence as freshness. An unchanged completed review may be recovered and logged without spawning another reviewer. Planned subsequent phases have separate snapshots and do not turn a phase PASS into final integration approval.
 
@@ -98,7 +98,7 @@ When it returns:
 
 Run `start review --phase <phaseId> --loop --feature <feature> --project <path>`. The result carries the checkpoint `label` and the phase `diff` command. Use them exactly; never compose a label — the reviewer stops rather than overwrite a finished review, which would strand the loop.
 
-If `./qrspi/<feature>/reviews/<label>.md` already contains a completed verdict for this recorded checkpoint, validate its snapshot and completion evidence, then recover through `log review` without spawning a reviewer. If stale or incomplete, stop and hand back. Otherwise, if the file is absent, create it containing exactly `## Verdict: PENDING`; leave an existing PENDING stub alone. Spawn only for an absent/pending review. The reviewer overwrites the stub but refuses a completed artifact.
+If `./.qrspi/<feature>/reviews/<label>.md` already contains a completed verdict for this recorded checkpoint, validate its snapshot and completion evidence, then recover through `log review` without spawning a reviewer. If stale or incomplete, stop and hand back. Otherwise, if the file is absent, create it containing exactly `## Verdict: PENDING`; leave an existing PENDING stub alone. Spawn only for an absent/pending review. The reviewer overwrites the stub but refuses a completed artifact.
 
 ```
 Spawn a fresh-context subagent with references/reviewer.md for feature: <feature-name>
@@ -113,13 +113,13 @@ If the reviewer returns STOPPED, run `loop stop "<reason>" --feature <feature> -
 
 ### `repair`
 
-Run `start repair --phase <phaseId> --loop --feature <feature> --project <path>`. This consumes the phase's one repair attempt before the agent runs, so a crash cannot buy a second one. The result's `review` is the failed review's path relative to `./qrspi/<feature>/`.
+Run `start repair --phase <phaseId> --loop --feature <feature> --project <path>`. This consumes the phase's one repair attempt before the agent runs, so a crash cannot buy a second one. The result's `review` is the failed review's path relative to `./.qrspi/<feature>/`.
 
 ```
 Spawn a fresh-context subagent with references/implementer.md for feature: <feature-name>
 Mode: repair
 Phase: <phaseId>
-Review: ./qrspi/<feature>/<review>
+Review: ./.qrspi/<feature>/<review>
 ```
 
 When it returns:

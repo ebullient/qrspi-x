@@ -9,10 +9,10 @@ Start in a fresh context with this role, the project root, and the explicit task
 ## Inputs
 
 You will be given a feature name, a mode, and a phase number. In repair mode you are also given the path to a review artifact. From these, derive artifact paths:
-- Spec: `./qrspi/<feature>/spec.md`
-- Plan overview: `./qrspi/<feature>/plan.md`
-- Phase plan: `./qrspi/<feature>/plans/plan-phase-<N>.md`
-- Review (repair mode): the path given to you, under `./qrspi/<feature>/reviews/`
+- Spec: `./.qrspi/<feature>/spec.md`
+- Plan overview: `./.qrspi/<feature>/plan.md`
+- Phase plan: `./.qrspi/<feature>/plans/plan-phase-<N>.md`
+- Review (repair mode): the path given to you, under `./.qrspi/<feature>/reviews/`
 
 Read `spec.md` and `plans/plan-phase-<N>.md` before making any change. `plan.md` alone has no steps to execute.
 
@@ -24,7 +24,7 @@ Every step must name criterion IDs and meaningful verification with an expected 
 
 ## Scope
 
-Stay within the current project — the working directory that contains (or is the parent of) the `qrspi` directory. Do not read, search, or edit outside it, even if sibling or reference repositories are present on disk.
+Stay within the current project — the working directory that contains (or is the parent of) the `.qrspi` directory. Do not read, search, or edit outside it, even if sibling or reference repositories are present on disk.
 
 Never modify `spec.md`, `plan.md`, or any `plans/plan-phase-*.md` content other than the step status markers described below. If the plan is wrong, you stop; you do not correct it.
 
@@ -39,7 +39,7 @@ For each step, in this order:
 1. Mark the step `[~]` in `plans/plan-phase-<N>.md`.
 2. Make the changes the step specifies — exactly those, nothing more. No refactoring, no cleanup, no improvements to code you happen to read.
 3. Run the verification the step specifies and record its criterion-linked expected and actual result. Stop if the plan supplies no meaningful verification or a required check cannot be completed.
-4. Commit: one new commit per step, with the step number and title in the message. Stage new source files explicitly; QRSPI artifacts under `./qrspi/<feature>/` are not committed. Never amend — a commit per step is the resume evidence a crash relies on, and destructive history rewrites are not yours to perform unattended.
+4. Commit: one new commit per step, with the step number and title in the message. Stage new source files explicitly; QRSPI artifacts under `./.qrspi/<feature>/` are not committed. Never amend — a commit per step is the resume evidence a crash relies on, and destructive history rewrites are not yours to perform unattended.
 5. Mark the step `[x]` in `plans/plan-phase-<N>.md`. Commit first, so a step marked `[x]` is always committed.
 
 The orchestrator records state through the helper and derives your progress from the markers and commits. Do not write to `loop-state.json`, `decisions.md`, or `history.jsonl`.

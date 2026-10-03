@@ -50,7 +50,7 @@ Keep a short `## Core Philosophy` near the top: the single rule the skill exists
 
 ## Artifacts and state
 
-Workflow artifacts live in `./qrspi/<feature>/` in the *user's* project, never in this repo. They are disposable scaffolding; the code is the source of truth.
+Workflow artifacts live in `./.qrspi/<feature>/` in the *user's* project, never in this repo. They are disposable scaffolding; the code is the source of truth.
 
 - Per-phase plan files live in the `plans/` subdirectory.
 - `plan.md` and the other artifacts stay in the workspace root.

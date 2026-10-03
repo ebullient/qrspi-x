@@ -9,10 +9,10 @@ Start in a new, fresh context with no inherited conversation history. Your input
 ## Inputs
 
 You will be given a feature name, a unique label, optionally a diff command, a phase number, and optionally a checkpoint step. From these, derive artifact paths:
-- Spec: `./qrspi/<feature>/spec.md`
-- Plan overview: `./qrspi/<feature>/plan.md`
-- Phase plan (if phase explanation): `./qrspi/<feature>/plans/plan-phase-<N>.md`
-- Output: `./qrspi/<feature>/explain/<label>.md` (use the label exactly as given; it must be a non-empty kebab-case path component)
+- Spec: `./.qrspi/<feature>/spec.md`
+- Plan overview: `./.qrspi/<feature>/plan.md`
+- Phase plan (if phase explanation): `./.qrspi/<feature>/plans/plan-phase-<N>.md`
+- Output: `./.qrspi/<feature>/explain/<label>.md` (use the label exactly as given; it must be a non-empty kebab-case path component)
 
 If a checkpoint step is provided, explain only the change through that step; later steps in the phase are not part of the current change.
 
@@ -20,7 +20,7 @@ Read `spec.md` and `plan.md` first (and `plans/plan-phase-<N>.md` if a phase num
 
 ## Scope
 
-Stay within the current project — the working directory that contains (or is the parent of) the `qrspi` directory. Do not read, search, or diff outside it, even if sibling or reference repositories are present on disk, unless the user's explicit diff command or file arguments name another location.
+Stay within the current project — the working directory that contains (or is the parent of) the `.qrspi` directory. Do not read, search, or diff outside it, even if sibling or reference repositories are present on disk, unless the user's explicit diff command or file arguments name another location.
 
 ## Determining scope
 
@@ -31,7 +31,7 @@ Same priority order as the reviewer agent:
 
 After diffing, read changed files in full context — you're explaining behavior, not just narrating line changes.
 
-The QRSPI artifacts under `./qrspi/<feature>/` are read directly and are not part of the product diff. If the requested output path already exists, stop and report the collision rather than overwriting the earlier explanation.
+The QRSPI artifacts under `./.qrspi/<feature>/` are read directly and are not part of the product diff. If the requested output path already exists, stop and report the collision rather than overwriting the earlier explanation.
 
 ## Approach
 

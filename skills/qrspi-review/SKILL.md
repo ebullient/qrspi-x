@@ -26,16 +26,16 @@ Helper installation, state tracking, recovery, and artifact-only fallback are de
 2. **Get a unique label.** 
     - If the helper is available: for a completed-phase review, run `qrspi-x status --feature <feature> --project <path> [--phase <N>]` and take `next.label`; for a mid-phase checkpoint, run `qrspi-x next-file review --phase <N> --step <k> --feature <feature> --project <path>`; for a final review, run `qrspi-x next-file final --feature <feature> --project <path>` — take the label these return as-is, never recompute or adjust it. 
     - Without the helper, use the phase name converted to a kebab-case path component; for an unphased final review use `final`. If that label already exists, append `-r2`, then `-r3`, and so on until unused.
-3. **Offer optional delegated reviews** — compatible review skills such as available code-review or security-review skills may run their own specialist subagents. Ask each selected skill to collate every subagent result into one complete, readable report over the exact same diff, persist it under `./qrspi/<feature>/reviews/supplemental/`, and return its path before the QRSPI reviewer is spawned. See **Running other review tools**.
+3. **Offer optional delegated reviews** — compatible review skills such as available code-review or security-review skills may run their own specialist subagents. Ask each selected skill to collate every subagent result into one complete, readable report over the exact same diff, persist it under `./.qrspi/<feature>/reviews/supplemental/`, and return its path before the QRSPI reviewer is spawned. See **Running other review tools**.
 4. **Ask whether to run the explainer too** — it is opt-in, and the reviewer and explainer must spawn in the same turn after any delegated reports are ready. See **Explainer Agent**.
 5. **Spawn** the reviewer, plus the explainer on a clear yes, in a single turn so neither sees the other's output.
 
 Read [the Reviewer role](references/reviewer.md), and [the Explainer role](references/explainer.md) only if selected. For each role, launch a **new, fresh-context subagent with no inherited conversation history**. Registration of a named agent is optional and never proves isolation. Supply only the complete role, project root, feature locator, and these review inputs:
 
 ```
-Spec: ./qrspi/<feature>/spec.md
-Plan: ./qrspi/<feature>/plan.md
-Phase plan: ./qrspi/<feature>/plans/plan-phase-<N>.md, if scoped
+Spec: ./.qrspi/<feature>/spec.md
+Plan: ./.qrspi/<feature>/plan.md
+Phase plan: ./.qrspi/<feature>/plans/plan-phase-<N>.md, if scoped
 Diff: <exact git diff command, or "staged">
 Phase: <N, or omit>
 Checkpoint step: <M, or omit>
@@ -55,13 +55,13 @@ Use the runtime decision summary at the human gate: affected criterion IDs, evid
 
 ## Reviewer Agent
 
-The reviewer reads `spec.md` as the standard it reviews against and the plan files to establish the boundaries of the review, runs the diff, and writes a verdict to `./qrspi/<feature>/reviews/<label>.md`.
+The reviewer reads `spec.md` as the standard it reviews against and the plan files to establish the boundaries of the review, runs the diff, and writes a verdict to `./.qrspi/<feature>/reviews/<label>.md`.
 
 Running it as a subagent keeps diff output and file reads out of the main conversation context while preserving the QRSPI-specific spec conformance check that generic code review tools lack.
 
 ### Scope guidance
 
-First check the working tree with `git status --short --untracked-files=all`. An untracked source file outside `qrspi/` must be tracked or staged, or it escapes the diff and the reviewer fails the review on it. Tracked modifications are already in the diff and need no action. Anything under `qrspi/` is the project's business, tracked or not: the reviewer ignores it either way.
+First check the working tree with `git status --short --untracked-files=all`. An untracked source file outside `.qrspi/` must be tracked or staged, or it escapes the diff and the reviewer fails the review on it. Tracked modifications are already in the diff and need no action. Anything under `.qrspi/` is the project's business, tracked or not: the reviewer ignores it either way.
 
 Then pick the scope:
 
@@ -80,7 +80,7 @@ Optional and opt-in, never a standing part of the flow. Ask: "Also generate an e
 
 ### Output
 
-The explainer writes to `./qrspi/<feature>/explain/<label>.md`, reusing the reviewer's label so the pair is findable together. Labels must be non-empty kebab-case path components.
+The explainer writes to `./.qrspi/<feature>/explain/<label>.md`, reusing the reviewer's label so the pair is findable together. Labels must be non-empty kebab-case path components.
 
 Treat the explainer's output as unverified narrative, not a substitute for the diff or for the reviewer's findings — if the two disagree about what the code does, that disagreement is itself worth looking at before trusting either one.
 
@@ -88,7 +88,7 @@ Treat the explainer's output as unverified narrative, not a substitute for the d
 
 This review's contribution is narrow — it checks the diff against `spec.md` and writes the verdict artifact the workflow records — and it is not a better bug-finder than a dedicated review tool. So:
 
-- **Offer compatible reviewers as delegated inputs.** an available code-review or security-review skill, a project reviewer, a linter, or a human may be useful. Run selected review skills over the exact same diff and ask each to run its normal subagents, then collate every result — including source attribution and disagreements — into one complete, readable report under `./qrspi/<feature>/reviews/supplemental/` before the QRSPI reviewer starts.
+- **Offer compatible reviewers as delegated inputs.** an available code-review or security-review skill, a project reviewer, a linter, or a human may be useful. Run selected review skills over the exact same diff and ask each to run its normal subagents, then collate every result — including source attribution and disagreements — into one complete, readable report under `./.qrspi/<feature>/reviews/supplemental/` before the QRSPI reviewer starts.
 - **Give the collated reports to the QRSPI reviewer.** Pass their paths in `Supplemental review reports`; do not pass an uncollated pile of specialist replies when the delegated skill can summarize them.
 - **Keep the QRSPI reviewer authoritative.** Delegated reports are advisory leads. The reviewer independently checks the code, then validates each relevant finding against the spec and scope. Accepted findings go into the normal review artifact; duplicates, rejected findings, and out-of-scope observations are recorded in `## Supplemental Reviews` only.
 - **Do not require delegation in unattended loops.** `autoloop` may use a supplemental reviewer only when it has a stable non-interactive contract and report output; otherwise it keeps the existing QRSPI-only review.
@@ -97,7 +97,7 @@ This review's contribution is narrow — it checks the diff against `spec.md` an
 
 If the reviewer reports STOPPED, hand back its evidence gap, contamination or stale-input reason. Do not log a verdict or automatically relaunch an unresolved stop. A resumed review requires corrected inputs and a fresh context; a changed snapshot requires a new label.
 
-1. Confirm `./qrspi/<feature>/reviews/<label>.md` exists before anything else. Do not write it yourself from the reviewer's reply: that reply is a verdict line, so the artifact would have no findings table and no Spec Conformance list — and a repair pass reads its fixes from those. Re-spawn the reviewer with the same label and diff, asking it to write the artifact.
+1. Confirm `./.qrspi/<feature>/reviews/<label>.md` exists before anything else. Do not write it yourself from the reviewer's reply: that reply is a verdict line, so the artifact would have no findings table and no Spec Conformance list — and a repair pass reads its fixes from those. Re-spawn the reviewer with the same label and diff, asking it to write the artifact.
 2. Read the verdict the reviewer reports (PASS / PASS WITH CONDITIONS / FAIL).
 3. If the explainer was also spawned, note that `explain/<label>.md` is available as supplementary reading — do not merge its content into the verdict or treat it as part of the review.
 4. If the helper is available, run `qrspi-x log review --feature <feature> --project <path> --label <label>` and surface returned findings. The helper reads the verdict from the artifact.

@@ -1,6 +1,6 @@
 # QRSPI-X with Codex
 
-The shared skills orchestrate the same QRSPI stages and use the existing `qrspi-x` helper and `qrspi/<feature>/` artifacts. Roles are supplied as complete Markdown instructions to fresh subagents, without Claude-only registration or tool frontmatter.
+The shared skills orchestrate the same QRSPI stages and use the existing `qrspi-x` helper and `.qrspi/<feature>/` artifacts. Roles are supplied as complete Markdown instructions to fresh subagents, without Claude-only registration or tool frontmatter.
 
 ## Install the skills manually
 
@@ -59,7 +59,7 @@ Merge this into the appropriate configuration; keep the user's existing settings
 ## Preserve the isolation boundaries
 
 - Query receives the raw request and human clarifications, plus question-only lists on reruns. It gathers no repository facts. It may return the complete artifact for the parent to save verbatim.
-- Research receives only questions and authorized source locations. Recursive searches exclude all `qrspi/` trees, including tracked artifacts, so feature intent and design discussion do not leak into evidence gathering. Reruns answer all current questions from current source evidence.
+- Research receives only questions and authorized source locations. Recursive searches exclude all `.qrspi/` trees, including tracked artifacts, so feature intent and design discussion do not leak into evidence gathering. Reruns answer all current questions from current source evidence.
 - Review receives the spec, plan, scoped code, and selected evidence. It receives no implementer conversation, explanation, confidence, or claimed test results. Each repair and re-review in Autoloop uses a new agent.
 
 Fresh history does not remove ambient project instructions or restrict filesystem access. If project instructions inject forbidden intent or evidence into a role, use a clean session/workspace or stop. Tool-use contracts guide behavior; enforceable access isolation requires runtime permissions or a restricted workspace. See [the complete runtime contract](runtime.md).
@@ -68,6 +68,6 @@ Fresh history does not remove ambient project instructions or restrict filesyste
 
 All eleven skill folders and names now use `qrspi-*`, including `qrspi-explore` and `qrspi-autoloop`. Replace invocations such as `/qrspi-x:query` with `$qrspi-query`; replace named-agent dispatch with the full bundled role and explicit input envelope. Role files no longer carry Claude `tools`, `model`, or color frontmatter. Skill frontmatter uses portable `name` and `description`; adjacent-step guidance lives in the body.
 
-Existing workspaces remain usable: `request.md`, `queries.md`, `research.md`, optional `approach.md`, `spec.md`, plan files, reviews, and helper state keep their existing formats. Shape reruns receive the exact previous approach backup to preserve the human decision. Research reruns refresh evidence instead of inheriting old answers. Human gates, backup numbering, review labels, verdict rules, and Autoloop's one-repair limit remain intact.
+Existing workspaces remain usable after moving the legacy `qrspi/` directory to `.qrspi/` and updating the Git ignore entry (never merge with an existing destination automatically): `request.md`, `queries.md`, `research.md`, optional `approach.md`, `spec.md`, plan files, reviews, and helper state keep their existing formats. Shape reruns receive the exact previous approach backup to preserve the human decision. Research reruns refresh evidence instead of inheriting old answers. Human gates, backup numbering, review labels, verdict rules, and Autoloop's one-repair limit remain intact.
 
-The legacy Claude manifest, release workflows, and helper source remain unchanged. Packaging and installer scripts are outside this port's finalized scope; install the self-contained skill folders directly. These plain role files are not drop-in Claude named-agent definitions.
+The legacy Claude manifest and release workflows remain unchanged. The helper workspace root now matches `.qrspi/`; rebuild any older local helper installation. Packaging and installer scripts are outside this port's finalized scope; install the self-contained skill folders directly. These plain role files are not drop-in Claude named-agent definitions.

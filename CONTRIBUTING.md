@@ -65,7 +65,7 @@ The release workflow publishes the helper and updates the release metadata. Do n
 
 ## Artifacts and persisted state
 
-Workflow artifacts belong to the project using QRSPI-X, not this repository. They live under `./qrspi/<feature>/`, are disposable scaffolding, and are never committed as product files.
+Workflow artifacts belong to the project using QRSPI-X, not this repository. They live under `./.qrspi/<feature>/`, are disposable scaffolding, and are never committed as product files.
 
 Persisted helper state lives in `loop-state.json`, `history.jsonl`, and `decisions.md`. [docs/workspace.md](docs/workspace.md) and [docs/interaction.md](docs/interaction.md) describe their shape and invariants; update those documents when persisted state or interactive behavior changes.
 
@@ -90,5 +90,5 @@ If helper behavior changes, update the skills and user-facing README when the wo
 - Re-read every file you edited in full.
 - Run `cd tools && npm run fullbuild` for helper or helper-contract changes.
 - Check `git diff --check`.
-- Confirm no `qrspi/` workflow artifacts or generated `tools/dist/` files are included.
+- Confirm no `.qrspi/` workflow artifacts or generated `tools/dist/` files are included.
 - Match the repository's gitmoji commit style (`✨`, `🐛`, `📝`, `🔧`, or `🔖`) when writing a commit message.

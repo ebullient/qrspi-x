@@ -1,6 +1,6 @@
 # Workspace model
 
-The helper operates on `./qrspi/<feature>/` under the project root. Workflow artifacts are disposable scaffolding. Product code remains outside `qrspi/` and is the source of truth.
+The helper operates on `./.qrspi/<feature>/` under the project root. Workflow artifacts are disposable scaffolding. Product code remains outside `.qrspi/` and is the source of truth.
 
 ## Files and directories
 
@@ -15,7 +15,7 @@ The helper also uses:
 - `history.jsonl` for timestamped events and notes.
 - `loop-state.json` while an unattended run is active. It is removed when that run is abandoned or reaches the end of its selected scope.
 
-The helper does not infer meaning from arbitrary extra files under `qrspi/<feature>/`.
+The helper does not infer meaning from arbitrary extra files under `.qrspi/<feature>/`.
 
 ## Progress detection
 

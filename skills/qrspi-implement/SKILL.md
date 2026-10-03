@@ -20,7 +20,7 @@ This skill is part of the QRSPI workflow and is normally invoked by `qrspi-workf
 Helper installation, recovery, and artifact-only fallback are defined in [the runtime contract](references/runtime.md). When the helper is available, run `qrspi-x start implement --feature <feature> --project <path> --phase <id>` to begin or resume a phase, `qrspi-x log implement --feature <feature> --project <path> --phase <id>` when a phase completes, and `qrspi-x decision add --feature <feature> --project <path> --text "<decision>"` for durable decisions (see Process). `qrspi-x` has no commit-mode concept — how many commits a phase produces is entirely this skill's own choice, made with plain git, never something the helper tracks or is told about. If it exits 127, continue this interactive step without it. Never edit any helper state manually.
 
 ## Task
-Execute `./qrspi/<feature>/plans/plan-phase-N.md` in order. For each step:
+Execute `./.qrspi/<feature>/plans/plan-phase-N.md` in order. For each step:
 
 1. Read the step.
 2. Make only its specified changes.
@@ -39,7 +39,7 @@ Execute `./qrspi/<feature>/plans/plan-phase-N.md` in order. For each step:
 
 Before starting or resuming, validate Spec and Plan input provenance and approval of their exact revisions using the runtime contract. Recheck before each step and after verification; if inputs changed, stop before committing or marking completion. A helper `start` success does not replace this check. Plan changes approved under Changing the Plan must be shown with updated normalized revision identifiers before execution resumes.
 
-For each completed step, report its criterion IDs, verification command or concrete inspection, expected and actual result, and commit SHA (or staged-diff fingerprint in the approved per-phase commit mode). Preserve this factual evidence under `./qrspi/<feature>/verification/` with unique attempt filenames, keyed by step and criterion ID, with the reviewed spec digest and source snapshot. The unattended role reports evidence to its caller for verbatim persistence in the same directory. Do not add evidence to the approved phase plan or overwrite earlier attempts. Never label an unrun check as passed. A skipped or inconclusive required check prevents completion; report it at the human gate.
+For each completed step, report its criterion IDs, verification command or concrete inspection, expected and actual result, and commit SHA (or staged-diff fingerprint in the approved per-phase commit mode). Preserve this factual evidence under `./.qrspi/<feature>/verification/` with unique attempt filenames, keyed by step and criterion ID, with the reviewed spec digest and source snapshot. The unattended role reports evidence to its caller for verbatim persistence in the same directory. Do not add evidence to the approved phase plan or overwrite earlier attempts. Never label an unrun check as passed. A skipped or inconclusive required check prevents completion; report it at the human gate.
 
 ## Execution Modes
 The mode sets both the range of steps and where to pause for human approval:
@@ -65,14 +65,14 @@ Mark phases in `plan.md` the same way. A phase is complete when all its steps ar
 ## Process
 When the helper is available, run `qrspi-x status`/`start`/`log`/`decision` as each step below calls for; otherwise continue this interactive step from the plan and phase-file markers without state tracking.
 
-1. Read `./qrspi/<feature>/plan.md` to understand the phase overview
+1. Read `./.qrspi/<feature>/plan.md` to understand the phase overview
 2. Orient yourself:
     - If the helper is available, run `status --feature <feature> --project <path>` to orient. `current.phase`/`current.planProgress` show the active phase and which steps the markers say are done, when a phase is in progress.
     - Without the helper, or when no phase is yet in progress, determine the phase from the plan and markers and confirm it with the human.
 3. Start the phase:
     - If the helper is available, run `start implement --phase <id> --feature <feature> --project <path>`. The same command starts a fresh phase and confirms the active one on a repeat call; it already checks for a dirty tree and an incomplete dependency — surface any findings it returns before continuing, and skip the manual check below, since this call already did it.
     - Without the helper, inspect `git status --short --untracked-files=all` and stop for unexpected changes before proceeding.
-4. Load `./qrspi/<feature>/plans/plan-phase-<id>.md`; start from the first `[ ]` or `[~]` step. A `[~]` step was interrupted mid-execution by a previous run — inspect the working tree and the git log to determine what actually landed before continuing it, rather than redoing it from scratch.
+4. Load `./.qrspi/<feature>/plans/plan-phase-<id>.md`; start from the first `[ ]` or `[~]` step. A `[~]` step was interrupted mid-execution by a previous run — inspect the working tree and the git log to determine what actually landed before continuing it, rather than redoing it from scratch.
 5. For each step, in order:
    - Mark as in progress `[~]` in the phase file
    - Implement the changes
