@@ -1,63 +1,43 @@
 # Contributing to QRSPI-X
 
-This guide is for people modifying the QRSPI-X plugin itself. For installing and running the workflow, see [README.md](README.md). The skills and agents under this repository are prompts that execute the workflow; the private TypeScript helper under `tools/` provides optional durable state and loop bookkeeping.
+This guide is for people modifying the QRSPI-X skills and roles themselves. For installing and running the workflow, see [README.md](README.md). The skills and agents under this repository are prompts that execute the workflow; the private TypeScript helper under `tools/` provides optional durable state and loop bookkeeping.
 
 ## Repository layout
 
 ```text
-skills/<name>/SKILL.md    one skill per directory, always named SKILL.md
-agents/<name>.md          one agent per file
-.claude-plugin/           Claude plugin manifest
+skills/qrspi-<name>/SKILL.md  portable skill entrypoint
+skills/qrspi-<name>/references/  bundled runtime and role contracts
+agents/<name>.md          canonical runtime-neutral role contracts
+.claude-plugin/           legacy manifest, unchanged by this port
 tools/                    published helper source and build metadata
 docs/                     helper and repository invariants
 ```
 
-Skills are invoked as `qrspi-x:<name>`. Agents are spawned by skills as `qrspi-x:<name>`.
+In Codex invoke skills as `$qrspi-<name>`. Caller skills launch fresh subagents with the full bundled role and explicit inputs; they do not rely on a named-agent registry. The helper remains `qrspi-x`.
 
-## Plugin structure and runtimes
+## Skill structure and runtimes
 
-QRSPI-X is packaged as a Claude plugin. Claude Code and IBM Bob recognize the plugin structure directly. Codex discovers the nested skill directories by finding `SKILL.md` files under `skills/`.
+Each skill folder includes `references/runtime.md` and only the role files it needs. This allows a skill to be copied or symlinked independently into Codex's `.agents/skills/` directory. [docs/codex.md](docs/codex.md) explains manual installation and migration. Installer scripts and release changes are outside this branch's finalized scope.
 
-Keep role definitions bundled in an `agents/` directory that is a peer of `skills/` at the package root:
-
-```text
-<package-root>/
-├── agents/
-│   └── <agent>.md
-└── skills/
-    └── <skill>/
-        └── SKILL.md
-```
-
-Caller skills resolve role files package-relatively, for example `../../agents/query.md` from `skills/query/SKILL.md`. Keep the agent frontmatter for runtimes that support it.
+Keep canonical role contracts in `agents/` and the canonical runtime contract in `docs/runtime.md`. Update their bundled copies in the same change, comparing them byte-for-byte; [docs/duplication.md](docs/duplication.md) lists the callers. The legacy manifest is retained, but plain Markdown roles do not register Claude named agents.
 
 ## Skills and agents
 
-A skill runs in the main conversation. It orchestrates the workflow, talks to the human, records state through the helper when available, and spawns agents.
+A skill runs in the main conversation. It orchestrates the workflow, talks to the human, records state through the helper when available, and spawns agents. An agent performs the heavy reading or writing in a fresh context and returns an artifact and concise report.
 
-An agent runs in an isolated subagent with its own context. It does the heavy reading or writing, then discards its context when it returns. Use an agent when isolation is part of the guarantee or when its work would otherwise flood the main conversation with source files and diffs.
+The split is load-bearing: Query must not see the codebase, Research must not see Query's reasoning or feature intent, and Review must not see the implementer's conversation. Read [the runtime contract](docs/runtime.md) for input envelopes and stopping conditions. Spawning a child or naming a role does not alone prove that history was excluded. If fresh contexts are unavailable, stop the isolated step instead of doing it in the parent.
 
-The split is load-bearing: Query must not see the codebase, Research must not see Query's reasoning, and Review must not see the implementer's conversation.
+### Role contracts
 
-### Agent frontmatter
+Role files are plain Markdown. Preserve the session model and reasoning selection unless the user requests another model. Describe permitted reads and writes in the contract; apply enforceable restrictions when the client supports them. Markdown and broad shell access do not provide a per-tool allowlist or filesystem isolation.
 
-Every agent must use `model: inherit`. Model selection belongs to the human's session so the plugin remains portable and a reviewer can be run in a different harness or on a different model.
+The Query caller may save a complete returned artifact verbatim when the child lacks a writing-only tool. Review must write its complete verdict artifact before completion is recorded. A parent must never manufacture a review artifact from a verdict-only reply.
 
-List the minimum toolset the agent needs. `query` gets `Write` only — it cannot read the codebase even if it tried. `implementer` is the only agent with `Edit`, because it is the only one that edits existing files.
+### Authorization and style
 
-When a runtime cannot register a named agent and a skill uses a generic fallback, the caller must preserve the role's guarantees by construction:
+[AGENTS.md](AGENTS.md) authorizes required QRSPI delegation within the requested workflow and independent prompt validation in disposable workspaces. Keep that authorization limited to the user's scope and runtime permissions. Optional explanation requires an opt-in, and unattended implementation requires the resolved Autoloop entry gate.
 
-- spawn with a fresh context and no inherited conversation turns;
-- pass only the role definition and its explicitly listed inputs; and
-- restrict tools to the narrowest set the runtime can express.
-
-A generic fallback is not behaviorally equivalent to a registered agent when the runtime cannot enforce the frontmatter allowlist.
-
-### Skill frontmatter and style
-
-`when_to_use` should distinguish the skill from adjacent skills and say what to use instead. Each skill should open with a short `## Core Philosophy` section stating the one rule it exists to enforce.
-
-Write instructions in the order they should be followed, with the reason attached to counterintuitive rules. Prefer mechanical criteria over judgment where a rule must hold. Use second person for agents and imperative voice for skills.
+Skills use `name` and `description` frontmatter, with `qrspi-*` names matching their folders. Descriptions identify the task; `## When to use` distinguishes neighboring steps. Keep `## Core Philosophy` short. Use second person for agents and imperative voice for skills.
 
 ## Helper development
 
@@ -97,7 +77,7 @@ Review and explain artifacts use non-empty, never-reused kebab-case labels such 
 
 Several facts are intentionally repeated across skills, agents, and the helper. Before changing one, check [docs/duplication.md](docs/duplication.md), especially for:
 
-- per-step implementation mechanics in `skills/implement/SKILL.md` and `agents/implementer.md`;
+- per-step implementation mechanics in `skills/qrspi-implement/SKILL.md` and `agents/implementer.md`;
 - the helper's command and transition contract;
 - diff-scope resolution in the reviewer and explainer;
 - the workflow artifact inventory and staleness rules; and
