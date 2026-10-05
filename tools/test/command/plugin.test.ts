@@ -1576,7 +1576,7 @@ describe("plugin install -> init -> update -> status round trip", () => {
         });
     });
 
-    it("install -> init -> remove using the real 5-entry package-release.sh payload shape (.claude-plugin, README.md, LICENSE, skills, agents)", async () => {
+    it("install -> init -> remove using the real 6-entry package-release.sh payload shape (plugin.json, .claude-plugin, README.md, LICENSE, skills, agents)", async () => {
         // Every other fixture in this file uses a reduced 2-3 entry
         // payload for brevity. This test exercises the real extraction
         // path (stagingAt's own listTopLevelEntries, not a faked
@@ -1589,6 +1589,10 @@ describe("plugin install -> init -> update -> status round trip", () => {
             {
                 path: "qrspi-manifest.json",
                 content: JSON.stringify({ version: "1.0.0" }),
+            },
+            {
+                path: "plugin.json",
+                content: '{"name":"qrspi-x","version":"1.0.0"}',
             },
             {
                 path: ".claude-plugin/plugin.json",
@@ -1621,6 +1625,7 @@ describe("plugin install -> init -> update -> status round trip", () => {
         );
         expect(centralManifest.payloadPaths.sort()).toEqual(
             [
+                "plugin.json",
                 ".claude-plugin",
                 "README.md",
                 "LICENSE",
@@ -1642,6 +1647,9 @@ describe("plugin install -> init -> update -> status round trip", () => {
                 "utf8",
             ),
         ).toBe('{"name":"qrspi-x"}');
+        expect(await readFile(join(targetDir, "plugin.json"), "utf8")).toBe(
+            '{"name":"qrspi-x","version":"1.0.0"}',
+        );
         expect(await readFile(join(targetDir, "LICENSE"), "utf8")).toBe(
             "license text",
         );

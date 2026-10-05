@@ -28,10 +28,11 @@ jobs:
         run: |
           set -euo pipefail
           helper="$(jq -r '.version' tools/package.json)"
+          portable="$(jq -r '.version' plugin.json)"
           plugin="$(jq -r '.version' .claude-plugin/plugin.json)"
-          if [ "$helper" != "$plugin" ]; then
-            echo "version mismatch: tools/package.json is $helper, .claude-plugin/plugin.json is $plugin" >&2
-            echo "The release workflow writes one version to both; reseed them to match before releasing." >&2
+          if [ "$helper" != "$portable" ] || [ "$helper" != "$plugin" ]; then
+            echo "version mismatch: tools/package.json is $helper, plugin.json is $portable, .claude-plugin/plugin.json is $plugin" >&2
+            echo "The release workflow writes one version to all three; reseed them to match before releasing." >&2
             exit 1
           fi
           echo "helper and plugin versions match: $helper"

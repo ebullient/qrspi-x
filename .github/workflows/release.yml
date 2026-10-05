@@ -71,7 +71,10 @@ jobs:
       - name: Update release metadata
         env:
           VERSION: ${{ steps.version.outputs.version }}
-        run: sed -i -E "s/(\"version\"[[:space:]]*:[[:space:]]*\")[^\"]+/\1$VERSION/" .claude-plugin/plugin.json
+        run: |
+          for manifest in plugin.json .claude-plugin/plugin.json; do
+            sed -i -E "s/(\"version\"[[:space:]]*:[[:space:]]*\")[^\"]+/\1$VERSION/" "$manifest"
+          done
 
       - name: Package release ZIP
         env:
@@ -105,7 +108,7 @@ jobs:
           gh auth setup-git
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .claude-plugin/plugin.json tools/package.json tools/package-lock.json CHANGELOG.md
+          git add plugin.json .claude-plugin/plugin.json tools/package.json tools/package-lock.json CHANGELOG.md
           git diff --cached --quiet && { echo "release metadata did not change" >&2; exit 1; }
           git commit -m "🔖 $VERSION"
           git tag -a "$VERSION" -m "Release $VERSION"
