@@ -12,63 +12,44 @@ compatibility: Node 22+
 - Spawn and track; never implement or review in this conversation
 - One repair attempt per phase, then a human
 
-This skill is part of the QRSPI workflow and is normally invoked by `qrspi-x:workflow`. It may also be invoked directly. Unlike the interactive skills, it requires the helper and cannot fall back to artifact-only mode.
-
 Runtime contract: read `../workflow/references/runtime.md` before each role dispatch. It defines the fresh-context, capability, fallback, and on-disk evidence requirements; this skill adds only Autoloop's unattended sequencing and helper lifecycle.
 
-## What this is
-
-Autoloop is the unattended sibling of `qrspi-x:workflow`. The human approves the scope and readiness at entry, then owns the final review; autoloop implements each phase, reviews it, repairs once after a failure, and advances or stops.
-
-This is a coarser gate, not a removed one. The human approves the scope and reviews the result; what changes is how much work accumulates in between. State that distinction at entry.
-
-### What the human gives up
-
-Interim reviews use the same inherited model that wrote the code, so they are a **fast filter, not an independent check**. Autoloop deliberately stops before final review so the human can run that review separately, ideally on a different model. Interim PASSes do not replace it.
+At entry, state that the human approves the scope and owns final review; autoloop implements, reviews, repairs once, and advances or stops between those gates. Interim reviews use the implementing context, so they are a fast filter, not an independent check.
 
 ## The helper
 
-All loop state goes through the helper. Do not edit `loop-state.json` directly.
+Command examples below are helper subcommands; invoke them as `qrspi-x <subcommand> ...`.
 
-The exit code carries the verdict — `0` clean, `1` hard block, `3` succeeded with a finding worth reading, `127` not found. Every command can return findings, not just `start`: check them on every call, including `status`, `log`, and `loop`. Most are fine to proceed past once read; a few mean a field in the same result (like `start review --loop`'s `diff`) was computed from something wrong or stale, and using it without acting on the finding first would hand the spawned agent bad input.
-
-- `status`/`start` print their real payload on success
-- `log` and `loop`'s lifecycle actions (other than `--start`) print `{}` on success.
+All loop state goes through the helper; never edit `loop-state.json` directly. Check findings on every command, including `status`, `log`, and `loop`, before using any payload. Exit codes are `0` clean, `1` hard block, `3` success with a finding, and `127` not found; `status`/`start` print payloads, while successful `log` and lifecycle actions print `{}`.
 
 If `qrspi-x` is not found (exit 127), tell the human to run `npm i -g @ebullient/qrspi-x`. Autoloop cannot run unattended without it — this is a hard stop, not a degrade-and-continue case.
+
+When a command or flag is unclear, use `qrspi-x --help` or the command's `--help`; do not guess.
 
 ## Entry gate
 
 Run `status`. If `loop` is present and `next.action` is not `done`, a loop already exists: go to **Resuming** instead.
 
-Agree the run with the human:
-
-- **Scope** — a single phase or all remaining phases. Default to a single phase if unstated; all-phases is the larger commitment and should be chosen deliberately. The helper takes this as a selector: `all`, one phase id (`3`), a range (`2..4`), or a comma list (`1,3`).
-- **What it will do unattended** — implement and commit each phase (one commit per step — not a choice; the strongest resume evidence for a run with no human watching), review each phase, and repair once on failure.
-- **What it will not do** — run the final review.
+Agree the run with the human: choose one phase or all remaining phases (default to one; selectors are `all`, `3`, `2..4`, or `1,3`), confirm it will implement and commit one commit per step, review each phase, and repair once on failure, and confirm it will not run final review.
 
 Then run `loop start <selector> --feature <feature> --project <path>`. It runs the helper's entry checks and resolves the scope, adding any incomplete phases the selection depends on. If it refuses, it wrote nothing: each finding's message says what is wrong and usually how to fix it, so work through them with the human and run it again.
 
-Once it succeeds, nothing has been spawned yet. Show the human the resolved `phaseIds` and wait for a clear yes. This is the only approval you will get. If the human rejects the scope, run `loop abandon "<reason>" --feature <feature> --project <path>` and start over with a different selector.
+Once it succeeds, nothing has been spawned. Show the resolved `phaseIds` and wait for the only approval. If rejected, run `loop abandon "<reason>" --feature <feature> --project <path>` and start over with a different selector.
 
 ## Loop state
 
-The helper owns `loop-state.json` for as long as a loop is running; `status` reports it under the top-level `loop` key (`scope`, `phaseIds`, `cycle`, `phaseId`, `checkpoint`, `conditions`, `stoppedReason`) — absent entirely once no loop is running. `loop.checkpoint` is only the **most recent** checkpoint and `loop.conditions` only the **currently open** ones, not the full run history; that full history is durably recorded in `history.jsonl` as each `log review` call happens, and survives after `loop-state.json` is deleted when the loop ends. Read it back with `history read --kind review` — see **Handing back**.
+The helper owns `loop-state.json` while a loop runs; `status` reports the current scope, phase, checkpoint, conditions, and stop reason under `loop`, which disappears when the loop ends. Full review history survives in `history.jsonl`; read it with `history read --kind review` when handing back.
 
 Each spawn is bracketed: `start <task> --loop` **before** spawning, `log <task>` after the agent returns. `start ... --loop` writes the pre-spawn intent to `loop-state.json` before anything runs, so a session that dies mid-spawn leaves that behind rather than what it last finished — a retried `start ... --loop` reads it back instead of starting over. `log <task>` reads the agent's output from disk — phase markers, commits, the review artifact — and records the outcome; it does not trust the agent's report.
 
 ## The loop
 
-Before each spawn, prefer the declared agent when the runtime supports named agents:
+Before each implementation, review, repair, or re-review spawn:
 
-- If `qrspi-x:implementer` or `qrspi-x:reviewer` is registered, spawn it directly so the runtime can apply its declared settings.
-- Otherwise, read the matching bundled role definition, resolved relative to this `SKILL.md`, and spawn a general-purpose subagent with its full contents as the role instructions:
-  - Implementer: `../../agents/implementer.md`
-  - Reviewer: `../../agents/reviewer.md`
+- If the named `qrspi-x:implementer` or `qrspi-x:reviewer` agent is registered, spawn it directly so the runtime applies its settings.
+- Otherwise, read the matching `../../agents/implementer.md` or `../../agents/reviewer.md` relative to this skill, then spawn a fresh general-purpose subagent with that file's full contents as its role instructions.
 
-Apply the same rule to implementation, review, repair, and re-review spawns.
-
-Drive the loop from the helper. Run `status` and act on `next.action`, then run `status` again, until the action is `done`, `stop`, or `acknowledge-required`.
+Drive the loop from the helper: run `status`, act on `next.action`, and repeat until the action is `done`, `stop`, or `acknowledge-required`.
 
 If `start implement --loop`/`start review --loop` reports the phase's base as stale or missing (e.g. a human fixed a FAIL by hand mid-run), determine the correct base — current HEAD is a reasonable default — and retry the same call with `--base <commit-ish>`. Ask the human if you aren't sure.
 
@@ -105,7 +86,7 @@ When it returns, run `log review --label <label> --feature <feature> --project <
 
 ### `repair`
 
-Run `start repair --phase <phaseId> --loop --feature <feature> --project <path>`. This consumes the phase's one repair attempt before the agent runs, so a crash cannot buy a second one. The result's `review` is the failed review's path relative to `./qrspi/<feature>/`.
+Run `start repair --phase <phaseId> --loop --feature <feature> --project <path>`. This consumes the phase's single repair attempt before spawning the agent. After the repair, review again; if it still fails, stop the loop rather than iterating further. The result's `review` is the failed review's path relative to `./qrspi/<feature>/`.
 
 ```
 Spawn qrspi-x:implementer agent for feature: <feature-name>
