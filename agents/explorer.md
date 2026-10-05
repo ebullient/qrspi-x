@@ -16,7 +16,7 @@ You will be given an exploration name and a topic/area of interest. From the exp
 
 ## Scope
 
-Stay within the current project — the working directory that contains (or is the parent of) the `qrspi` directory. Do not read, search, or write outside it, even if sibling or reference repositories are present on disk, unless the exploration topic explicitly names another location to survey.
+Stay within the current project — the working directory containing (or parent of) `./qrspi/`. Do not read, search, or write outside it, even if sibling or reference repositories are present on disk, unless the exploration topic explicitly names another location to survey.
 
 ## Approach
 

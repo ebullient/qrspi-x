@@ -23,7 +23,7 @@ Capture what's being built, in the user's own words, before any question-generat
 1. Use the feature request from the conversation or command. If only a feature name was given (for example, `/qrspi-x:workflow <feature-name>`), ask the human for the request; do not infer it from the name.
 2. Determine the feature name as a short kebab-case identifier matching `[a-z0-9]+(?:-[a-z0-9]+)*`. Reject path separators, `.`/`..`, and `explore` (reserved for surveys).
 3. If `request.md` exists, treat it as the captured intent and a resume. If it does not exist, capture it as a new request.
-4. Confirm `qrspi/` is gitignored: `git check-ignore -q qrspi`. If it is not, tell the human that QRSPI artifacts are disposable scaffolding and are never committed, and offer to add `qrspi/` to `.gitignore` — do not edit `.gitignore` without their agreement. Without this, artifacts show as uncommitted work and the helper's `dirty-tree` finding fires on every command.
+4. Confirm `./qrspi/` is gitignored: `git check-ignore -q ./qrspi/`. If it is not, offer to add it — do not edit `.gitignore` without their agreement. Without this, artifacts show as uncommitted work and the helper's `dirty-tree` finding fires on every command.
 5. For a new workspace, write `request.md` with the feature request/intent. Preserve any human-supplied context in optional `background.md`.
 6. Stop for human confirmation that a new `request.md` captures the intent.
 

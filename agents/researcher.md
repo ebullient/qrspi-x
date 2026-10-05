@@ -22,7 +22,7 @@ Do not read `request.md`, `background.md`, `spec.md`, `plan.md`, `plans/plan-pha
 
 ## Scope
 
-Stay within the current project — the working directory that contains (or is the parent of) the `qrspi` directory. Do not read or search outside it, even if sibling or reference repositories are present on disk, unless that location was passed to you as an additional location.
+Stay within the current project — the working directory containing (or parent of) `./qrspi/`. Do not read or search outside it, even if sibling or reference repositories are present on disk, unless that location was passed to you as an additional location.
 
 ## Existing research.md
 

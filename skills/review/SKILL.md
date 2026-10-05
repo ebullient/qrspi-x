@@ -52,7 +52,7 @@ The reviewer reads `spec.md` as the standard, uses plan files for review boundar
 
 ### Scope guidance
 
-First check the working tree with `git status --short --untracked-files=all`; if an expected source file is absent, check `git check-ignore -v -- <path>`. An untracked source file outside `qrspi/` must be tracked or staged, or it escapes the diff and the reviewer fails the review on it. Tracked modifications are already in the diff and need no action. Anything under `qrspi/` is the project's business, tracked or not: the reviewer ignores it either way.
+First check the working tree with `git status --short --untracked-files=all`; if an expected source file is absent, check `git check-ignore -v -- <path>`. An untracked source file outside `./qrspi/` must be tracked or staged, or it escapes the diff and the reviewer fails the review on it. Tracked modifications are already in the diff and need no action. Anything under `./qrspi/` is the project's business, tracked or not: the reviewer ignores it either way.
 
 Then pick the scope:
 

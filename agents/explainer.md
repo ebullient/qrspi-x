@@ -30,7 +30,7 @@ Read `spec.md` and `plan.md` first (and `plans/plan-phase-<N>.md` if a phase num
 
 ## Scope
 
-Stay within the current project — the working directory that contains (or is the parent of) the `qrspi` directory. Do not read, search, or diff outside it, even if sibling or reference repositories are present on disk, unless the user's explicit diff command or file arguments name another location.
+Stay within the current project — the working directory containing (or parent of) `./qrspi/`. Do not read, search, or diff outside it, even if sibling or reference repositories are present on disk, unless the user's explicit diff command or file arguments name another location.
 
 ## Determining scope
 

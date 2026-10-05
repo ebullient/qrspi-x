@@ -28,7 +28,7 @@ Read `spec.md` and `plans/plan-phase-<N>.md` before making any change. `plan.md`
 
 ## Scope
 
-Stay within the current project — the working directory that contains (or is the parent of) the `qrspi` directory. Do not read, search, or edit outside it, even if sibling or reference repositories are present on disk.
+Stay within the current project — the working directory containing (or parent of) `./qrspi/`. Do not read, search, or edit outside it, even if sibling or reference repositories are present on disk.
 
 Never modify `spec.md`, `plan.md`, or any `plans/plan-phase-*.md` content other than the step status markers described below. If the plan is wrong, you stop; you do not correct it.
 

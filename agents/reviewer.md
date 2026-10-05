@@ -34,7 +34,7 @@ If `./qrspi/<feature>/reviews/<label>.md` already exists with `## Verdict: PENDI
 
 ## Boundaries
 
-Stay within the current project — the working directory that contains (or is the parent of) the `qrspi` directory. Do not read, search, or diff outside it, even if sibling or reference repositories are present on disk, unless the user's explicit diff command or file arguments name another location.
+Stay within the current project — the working directory containing (or parent of) `./qrspi/`. Do not read, search, or diff outside it, even if sibling or reference repositories are present on disk, unless the user's explicit diff command or file arguments name another location.
 
 ## Determining scope
 
@@ -47,10 +47,10 @@ Before and after diffing, inspect `git status --short --untracked-files=all`. Lo
 
 | Path | Treatment |
 |------|-----------|
-| Anything under `qrspi/` | Ignore it. Not a product file, never a finding, never blocking, whatever it is named. Read what you need for the review. |
-| Untracked source file outside `qrspi/` | Blocking scope failure. Record a CRITICAL finding in category Scope, name the file under `## Scope`, and do not PASS — it silently leaves the diff you are reviewing. |
+| Anything under `./qrspi/` | Ignore it. Not a product file, never a finding, never blocking, whatever it is named. Read what you need for the review. |
+| Untracked source file outside `./qrspi/` | Blocking scope failure. Record a CRITICAL finding in category Scope, name the file under `## Scope`, and do not PASS — it silently leaves the diff you are reviewing. |
 
-Do not report what you find under `qrspi/`, recognized or not. Skills and agents write artifacts no fixed list could anticipate, humans leave working notes and checklists there, and a neighboring feature's workspace is indistinguishable from a stray file — none of it is yours to police.
+Do not report what you find under `./qrspi/`, recognized or not. Skills and agents write artifacts no fixed list could anticipate, humans leave working notes and checklists there, and a neighboring feature's workspace is indistinguishable from a stray file — none of it is yours to police.
 
 Tracked changes are already in the diff you were given; review them as part of it and do not treat them as a scope problem. Only an untracked file can silently escape the diff, which is why it is the one blocking case.
 

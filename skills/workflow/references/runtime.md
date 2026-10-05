@@ -11,7 +11,7 @@ The caller gives a role only the feature name or topic and the explicitly listed
 - **Fresh context:** isolated roles start without inherited conversation turns or unrelated implementation reasoning.
 - **Tool restrictions:** the runtime applies the declared minimum tools; Query's `Write`-only boundary is a required capability, not a suggestion.
 - **Filesystem permissions:** the runtime grants only the read/write scope required by the role. Implementer is the role that edits existing product files; other roles write only their assigned artifacts unless their skill says otherwise.
-- **Durable writes:** role outputs and progress markers are written to the package or the project's `qrspi/` workspace before the caller advances.
+- **Durable writes:** role outputs and progress markers are written to the package or the project's `./qrspi/` workspace before the caller advances.
 - **Human gates:** the interactive orchestrator stops for approval at its documented boundary. Autoloop changes the granularity of the gate, not whether the human owns approval and final review.
 
 Prompt guidance is advisory when the runtime cannot enforce one of these capabilities. The adapter must identify the guarantee as degraded or unsupported; it must not represent a general-purpose fallback as equivalent to a registered role with enforced permissions.
