@@ -1,22 +1,25 @@
 # Contributing to QRSPI-X
 
-This guide is for people modifying the QRSPI-X plugin itself. For installing and running the workflow, see [README.md](README.md). The skills and agents under this repository are prompts that execute the workflow; the private TypeScript helper under `tools/` provides optional durable state and loop bookkeeping.
+This guide is for people modifying the QRSPI-X package itself. For installing and running the workflow, see [README.md](README.md). The skills and agents under this repository are prompts that execute the workflow; the private TypeScript helper under `tools/` provides optional durable state and loop bookkeeping.
 
 ## Repository layout
 
 ```text
 skills/<name>/SKILL.md    one skill per directory, always named SKILL.md
 agents/<name>.md          one agent per file
-.claude-plugin/           Claude plugin manifest
+plugin.json               portable Agent Plugins manifest
+.claude-plugin/           Claude compatibility manifest
 tools/                    published helper source and build metadata
 docs/                     helper and repository invariants
 ```
 
 Skills are invoked as `qrspi-x:<name>`. Agents are spawned by skills as `qrspi-x:<name>`.
 
-## Plugin structure and runtimes
+## Package structure and runtimes
 
-QRSPI-X is packaged as a Claude plugin. Claude Code and IBM Bob recognize the plugin structure directly. Codex discovers the nested skill directories by finding `SKILL.md` files under `skills/`.
+QRSPI-X is packaged around the root `skills/` and `agents/` layout. `plugin.json` is the portable package identity, while `.claude-plugin/plugin.json` preserves Claude-specific compatibility. Claude Code and IBM Bob recognize the plugin structure directly; Codex discovers the nested skill directories by finding `SKILL.md` files under `skills/`.
+
+Runtime-specific discovery, named-agent registration, and tool enforcement are adapters around the same package. Keep portable role requirements in the role and skill guidance, and label adapter instructions with the runtime they target. A runtime that cannot enforce a required capability must be documented as degraded for that guarantee rather than treated as equivalent.
 
 Keep role definitions bundled in an `agents/` directory that is a peer of `skills/` at the package root:
 
@@ -41,7 +44,7 @@ The split is load-bearing: Query must not see the codebase, Research must not se
 
 ### Agent frontmatter
 
-Every agent must use `model: inherit`. Model selection belongs to the human's session so the plugin remains portable and a reviewer can be run in a different harness or on a different model.
+Agent files must not select a concrete model or set `model: inherit`. Model selection belongs to the runtime and human session so the package remains portable and a reviewer can be run in a different harness or on a different model. Keep only frontmatter that the runtime actually consumes, such as the minimum `tools:` declaration for runtimes that enforce it.
 
 List the minimum toolset the agent needs. `query` gets `Write` only — it cannot read the codebase even if it tried. `implementer` is the only agent with `Edit`, because it is the only one that edits existing files.
 
@@ -51,7 +54,7 @@ When a runtime cannot register a named agent and a skill uses a generic fallback
 - pass only the role definition and its explicitly listed inputs; and
 - restrict tools to the narrowest set the runtime can express.
 
-A generic fallback is not behaviorally equivalent to a registered agent when the runtime cannot enforce the frontmatter allowlist.
+A generic fallback is not behaviorally equivalent to a registered agent when the runtime cannot enforce the frontmatter allowlist; document that limitation at the adapter boundary.
 
 ### Skill frontmatter and style
 

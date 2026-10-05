@@ -1,5 +1,7 @@
 # Duplication to keep in sync
 
+The portable workflow contract is canonical. Runtime-specific packaging, discovery, model, and tool-enforcement notes may repeat only as thin, clearly labeled adapter guidance in `README.md`, `CONTRIBUTING.md`, `AGENTS.md`, skills, or agents. When a runtime cannot enforce a role requirement, the adapter must say so instead of copying the contract and implying equivalent enforcement.
+
 Facts that are intentionally repeated across multiple files in this plugin. Check this list before editing any file it names — these are not accidents to clean up, but copies that must agree.
 
 **Per-step implementation mechanics** appear in two places:

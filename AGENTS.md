@@ -1,6 +1,6 @@
 # Working on this repo
 
-Conventions for editing QRSPI-X itself. This file is for whoever (human or agent) is **modifying** the plugin. It is not shipped guidance for running a QRSPI workflow — that's [README.md](README.md), and the skills and agents are instructions to the agents that execute the workflow.
+Conventions for editing QRSPI-X itself. This file is for whoever (human or agent) is **modifying** the package. It is not shipped guidance for running a QRSPI workflow — that's [README.md](README.md), and the skills and agents are instructions to the agents that execute the workflow.
 
 Most of this repo is markdown, with the private TypeScript helper under `tools/`. Read the file you're changing in full before changing it. For a concise, implementation-backed map of the helper's workspace and interactive behavior, see [docs/helper.md](docs/helper.md); consult the source and tests when a detail matters.
 
@@ -9,7 +9,8 @@ Most of this repo is markdown, with the private TypeScript helper under `tools/`
 ```text
 skills/<name>/SKILL.md    one skill per directory, always named SKILL.md
 agents/<name>.md          one agent per file
-.claude-plugin/           plugin manifest (name, version)
+plugin.json               portable package manifest
+.claude-plugin/           Claude compatibility manifest (name, version)
 tools/                    published helper source and build metadata
 ```
 
@@ -22,13 +23,13 @@ The split is deliberate and load-bearing:
 - **A skill** runs in the main conversation. It orchestrates: it decides what happens next, talks to the human, records state through the helper, and spawns agents.
 - **An agent** runs in an isolated subagent with its own context. It does the heavy reading and writing, then discards its context when it returns.
 
-Work goes in an agent when it would otherwise flood the main conversation with diffs or file contents, or when isolation is the point — Query must not see the codebase, Research must not see Query's reasoning, the reviewer must not see the implementer's.
+Work goes in an agent when it would otherwise flood the main conversation with diffs or file contents, or when fresh context is part of the role contract — Query must not see the codebase, Research must not see Query's reasoning, and the reviewer must not see the implementer's.
 
 When a step needs both, the skill is the thin caller and the agent holds the contract. `review` and `autoloop` are the clearest examples.
 
 ### Agent frontmatter
 
-**Leave `model` out of every agent's frontmatter, always.** Never name a specific model, and never set `model: inherit` explicitly either — an explicit `inherit` blocks `CLAUDE_CODE_SUBAGENT_MODEL` from taking effect, which takes the choice away from a human who set that variable to run subagents on a different model. With the field absent, Claude Code resolves the model per Claude Code's own subagent model resolution order: a per-invocation override, then `CLAUDE_CODE_SUBAGENT_MODEL` if set, then the main conversation's model. That default still keeps the plugin portable and still honors the README's "review on a different model than you implemented on" advice when the env var is unset — it just stops overriding the env var when it is set.
+**Leave `model` out of every agent's frontmatter, always.** Never name a specific model, and never set `model: inherit` explicitly either. Model selection belongs to the runtime and human session, so the package remains portable and a reviewer can run in a different harness or on a different model. Claude Code users should rely on Claude Code's own subagent model resolution or an explicit invocation override; do not encode that adapter policy in role files.
 
 The `tools:` frontmatter field should list the minimum toolset the agent needs.
 

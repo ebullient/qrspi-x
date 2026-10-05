@@ -1,11 +1,11 @@
 # QRSPI-X
 
-A modified version of Dexter Horthy's QRSPI method for spec-driven, human-gated feature development with coding agents. QRSPI-X is built as a set of Claude Code skills and subagents.
+A modified version of Dexter Horthy's QRSPI method for spec-driven, human-gated feature development with coding agents. QRSPI-X is a portable package of skills, role definitions, and an optional helper, with runtime adapters for Claude Code, Codex, and IBM Bob.
 
-This README is for the human running the workflow. `AGENTS.md`, `skills/*/SKILL.md` and `agents/*.md` files are instructions for the agents. This file explains what the workflow is, why it is structured this way, and how to [install](#installation) it. Maintainer and contributor guidance lives in [CONTRIBUTING.md](CONTRIBUTING.md).
+This README is for the human running the workflow. `AGENTS.md`, `skills/*/SKILL.md` and `agents/*.md` files are instructions for the agents. This file explains the portable workflow contract, runtime adapters, and how to [install](#installation) it. Maintainer and contributor guidance lives in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 > [!WARNING]
-> An optional utility, `qrspi-x` is still experimental and the official `@ebullient/qrspi-x` npm package has not been published yet. The skills and agents do not require it. Until it is released, use the [local helper install](#install-the-helper-locally) described below if you want helper-assisted workflows.
+> An optional utility, `qrspi-x` is still experimental and the official `@ebullient/qrspi-x` npm package has not been published yet. The skills and agents do not require it. Until it is released, use the [local helper install](#local-development-install) described below if you want helper-assisted workflows.
 
 ## What QRSPI-X does
 
@@ -78,7 +78,7 @@ The tooling does not enforce all of these practices. They are what make the proc
 
 **Use Query and Research to find the real intent, not just to check a finished task.** No fully formed feature request yet? Run them against a rough idea and use the results to rewrite `request.md` before Spec.
 
-**Review independently.** By default, every agent runs on the main conversation's model (Claude Code's subagent model resolution falls back to it when no `model` is set), so isolation removes conversation history but not the model's blind spots. Run final Review in a different harness or with a different model than the one that ran Implement — set `CLAUDE_CODE_SUBAGENT_MODEL` to point every agent at a different model, or pass a model override per invocation.
+**Review independently.** Isolation removes the prior conversation from a role's context, but it does not remove the model's blind spots. Run final Review in a different harness or with a different model than the one that ran Implement. The runtime chooses the model; QRSPI-X does not require a particular provider or model name. Claude Code users can set `CLAUDE_CODE_SUBAGENT_MODEL` or pass a model override per invocation.
 
 **Review the code and diff, not only the plan.** Skim the per-phase plan, inspect the actual diff at each phase boundary, and do one full pass at the end for how the phases fit together.
 
@@ -123,20 +123,45 @@ Autoloop records its position through the helper before acting, so an interrupte
 
 ## Installation
 
-### Skills and agents
+### Portable package
 
-The workflow itself is installed from a source checkout. Clone this repository, then link the checkout into each agent runtime's skills/plugin location. A link keeps one checkout authoritative, so updates are available immediately:
+The package root contains `skills/` and `agents/` directories. A runtime that can discover `SKILL.md` files can load the workflow from that layout. The portable package manifest is `plugin.json`; it identifies the package without changing skill names, agent names, or the `qrspi/` workspace.
+
+### Runtime adapters
+
+The workflow contract is runtime-neutral: skills orchestrate stages, role definitions describe isolated work, artifacts record durable outputs, and humans approve transitions. Each runtime must supply the capabilities a role needs, including fresh context, tool restrictions, filesystem access, durable writes, and human gates. A prompt describes these requirements but cannot create a runtime-enforced security boundary by itself.
+
+#### Claude Code
+
+Claude Code loads the existing `.claude-plugin/plugin.json` package entry and its named agents. From a source checkout, link the repository into the workspace's Claude plugin location:
 
 ```bash
 git clone <repository-url> <path-to-qrspi-x>
 ln -s <path-to-qrspi-x> <workspace>/.claude/skills/qrspi-x
+```
+
+#### Codex and IBM Bob package links
+
+For runtimes that use workspace-local skill or plugin directories, the same checkout can be linked into the corresponding runtime location:
+
+```bash
 ln -s <path-to-qrspi-x> <workspace>/.agents/skills/qrspi-x
 ln -s <path-to-qrspi-x> <workspace>/.bob/plugins/qrspi-x
 ```
 
-On Windows, use a directory junction (`mklink /J`) if available. If linking is not convenient, copy the checkout into those locations instead; repeat the copy after pulling updates. Use the appropriate workspace or home-level location for the runtime you are configuring. Once the links or copies exist, the `qrspi-x:<skill>` skills and their bundled agents are available. No npm package or helper CLI is required for the normal human-gated workflow.
+#### Codex
 
-### Install the helper locally
+Codex can discover the nested skill directories by finding `SKILL.md` files under `skills/`. When named-agent registration is unavailable, the caller uses the package-relative `agents/*.md` definition with a fresh context and the narrowest available tools. If the runtime cannot enforce one of those capabilities, the corresponding isolation or permission guarantee is degraded rather than assumed.
+
+#### IBM Bob
+
+IBM Bob can use the Claude-compatible plugin directory structure for distributing the nested skills and named agents. Bob's discovery scoping remains runtime-specific; it is not a prerequisite for the portable workflow contract.
+
+The package-relative layout is shared across runtimes; the discovery and named-agent behavior above are adapters, not new QRSPI names or paths. If linking is not convenient, copy the checkout into the appropriate runtime location and repeat the copy after pulling updates.
+
+On Windows, use a directory junction (`mklink /J`) if available. Use the appropriate workspace or home-level location for the runtime you are configuring. Once the links or copies exist, the `qrspi-x:<skill>` skills and their bundled agents are available. No npm package or helper CLI is required for the normal human-gated workflow.
+
+### Optional helper (all runtimes)
 
 Use Node 22 or newer for the optional helper CLI.
 
