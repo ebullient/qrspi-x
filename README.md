@@ -78,7 +78,7 @@ The tooling does not enforce all of these practices. They are what make the proc
 
 **Use Query and Research to find the real intent, not just to check a finished task.** No fully formed feature request yet? Run them against a rough idea and use the results to rewrite `request.md` before Spec.
 
-**Review independently.** Every agent uses `model: inherit`, so isolation removes conversation history but not the model's blind spots. Run final Review in a different harness or with a different model than the one that ran Implement.
+**Review independently.** By default, every agent runs on the main conversation's model (Claude Code's subagent model resolution falls back to it when no `model` is set), so isolation removes conversation history but not the model's blind spots. Run final Review in a different harness or with a different model than the one that ran Implement — set `CLAUDE_CODE_SUBAGENT_MODEL` to point every agent at a different model, or pass a model override per invocation.
 
 **Review the code and diff, not only the plan.** Skim the per-phase plan, inspect the actual diff at each phase boundary, and do one full pass at the end for how the phases fit together.
 

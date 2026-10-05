@@ -33,7 +33,9 @@ Create `./qrspi/<feature>/spec.md` with:
 - Concrete examples of inputs and outputs
 - Explicit statements about what stays the same
 - No implementation details (no "how", only "what")
-- Testable acceptance criteria
+- Testable acceptance criteria, each labeled with a stable `S<number>` ID
+
+Example criterion: `S1 — Given an expired token, refresh returns the documented rejection and creates no session.` Keep an existing ID when refining that requirement across a rerun; allocate a new ID for a genuinely different requirement, and never recycle a retired one. Plan and Review reference these IDs, so a renumbering on rerun breaks that trail.
 
 ## Process
 

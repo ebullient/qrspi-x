@@ -28,7 +28,7 @@ When a step needs both, the skill is the thin caller and the agent holds the con
 
 ### Agent frontmatter
 
-**`model: inherit` on every agent, always.** Never name a specific model. It keeps the plugin portable across whatever the user has access to, and it keeps model choice where it belongs: the human picks the session model, which is how the README's "review on a different model than you implemented on" advice is actually honored. Hardcoding a model would silently break that and age badly.
+**Leave `model` out of every agent's frontmatter, always.** Never name a specific model, and never set `model: inherit` explicitly either — an explicit `inherit` blocks `CLAUDE_CODE_SUBAGENT_MODEL` from taking effect, which takes the choice away from a human who set that variable to run subagents on a different model. With the field absent, Claude Code resolves the model per Claude Code's own subagent model resolution order: a per-invocation override, then `CLAUDE_CODE_SUBAGENT_MODEL` if set, then the main conversation's model. That default still keeps the plugin portable and still honors the README's "review on a different model than you implemented on" advice when the env var is unset — it just stops overriding the env var when it is set.
 
 The `tools:` frontmatter field should list the minimum toolset the agent needs.
 

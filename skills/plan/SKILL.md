@@ -55,6 +55,7 @@ A phase id is a number, optionally followed by one lowercase letter (`1`, `2`, `
 - [ ] Status marker
 - Files: path/to/file1.ts, path/to/file2.ts
 - Changes: Specific changes to make
+- Criteria: S1, S2 — behavior delivered or preserved by this step
 - Tests: How to verify this step
 - Risk: [Low/Medium/High] - why
 
@@ -77,7 +78,8 @@ Discovering mid-implementation that the plan is missing a piece of work — a ga
 This is the mechanism behind `qrspi-x:workflow`'s "Back to Plan" option after a FAIL. Realizing mid-implementation that the plan missed something is an ordinary outcome of doing the work, not a failure to avoid — that's exactly what this exists for.
 
 ## Planning Principles
-- Each step should take 5-15 minutes to implement
+- Size each step around one independently verifiable behavior and a recoverable commit, rather than an estimated duration. Split work that has multiple unrelated outcomes; keep code and its meaningful verification together.
+- Map every active spec criterion to one or more steps; make intentional coverage overlap explicit. Never invent a criterion or silently omit one.
 - Steps within a phase should be ordered to minimize breaking changes
 - Include test updates alongside code changes
 - Flag steps that might need extra attention
@@ -91,7 +93,7 @@ This is the full-plan process, for a fresh plan or a ground-up revision. To add 
 
 1. Read `./qrspi/<feature>/spec.md`, `./qrspi/<feature>/research.md`, and `./qrspi/<feature>/approach.md` when Shape was run
 2. If `approach.md` exists, stop unless its `## Decision` section is decided (holds something other than `None.`); the plan must not bypass the Shape decision gate.
-3. Draft the full list of atomic steps, honoring the selected approach when `approach.md` exists
+3. Draft the full list of behavior-sized steps, honoring the selected approach when `approach.md` exists, and map every active spec criterion to the step(s) that deliver or preserve it
 4. If total steps > 5: group into phases, each with a clear name and goal; pause and present the proposed phase breakdown to the user for approval before writing files
 5. Once the phase structure is approved (or steps ≤ 5), perform the dependency check for every phase:
    - Ignore the phase's position in the table and identify the concrete inputs it requires from work in another phase.
