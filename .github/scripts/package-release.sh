@@ -15,5 +15,9 @@ else
   output_path="$repo_root/$output"
 fi
 mkdir -p "$(dirname "$output_path")"
+manifest_dir="$(mktemp -d "${TMPDIR:-/tmp}/qrspi-manifest.XXXXXX")"
+trap 'rm -rf "$manifest_dir"' EXIT
+printf '{"version":"%s"}\n' "$version" >"$manifest_dir/qrspi-manifest.json"
 (cd "$repo_root" && zip -qr "$output_path" .claude-plugin README.md LICENSE skills agents)
+(cd "$manifest_dir" && zip -qj "$output_path" qrspi-manifest.json)
 printf '%s\n' "$output_path"
