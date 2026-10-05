@@ -1,6 +1,6 @@
 # QRSPI-X
 
-A modified version of Dexter Horthy's QRSPI method for spec-driven, human-gated feature development with coding agents. QRSPI-X is built as a set of Claude Code skills and subagents.
+A modified version of Dexter Horthy's QRSPI method for spec-driven, human-gated feature development with coding agents. This branch provides runtime-neutral skills and isolated role contracts for use with Codex.
 
 This README is for the human running the workflow. `AGENTS.md`, `skills/*/SKILL.md` and `agents/*.md` files are instructions for the agents. This file explains what the workflow is, why it is structured this way, and how to [install](#installation) it. Maintainer and contributor guidance lives in [CONTRIBUTING.md](CONTRIBUTING.md).
 
@@ -37,7 +37,7 @@ Horthy's retrospective on Research-Plan-Implement (['Everything We Got Wrong Abo
 
 QRSPI-X addresses each one:
 
-- **Research gets biased by the feature idea** → Query and Research each run in their own isolated subagent with limited tools. Query only gets `Write` — it cannot read the codebase even if it tried. Neither subagent sees the other's reasoning or the main conversation.
+- **Research gets biased by the feature idea** → Query and Research each run in a fresh context without the main conversation or each other's reasoning. Query works from the raw brief and must not inspect the repository; Research receives only the resulting questions and source locations. Tool-use instructions are not an enforced access boundary; see [the runtime contract](docs/runtime.md).
 - **Plans are unreadable** → the plan has two layers: a short phase overview (`plan.md`) you can read in one pass, and per-phase detail files you open when implementing that phase.
 - **Layer-by-layer plans hide integration bugs** → you approve phase boundaries *before* `plan.md` is written, not after. You are approving how the work is cut up, not just what is inside each piece.
 - **One prompt does too much** → each stage is its own skill with one job, run fresh instead of piled into a single prompt.
@@ -48,7 +48,7 @@ QRSPI-X addresses each one:
 |---|---|---|
 | Explore *(optional)* | Look around an area of the codebase before a feature request exists; suggest candidate directions | subagent, broad tools |
 | Init | Write down the feature request as-is, into `request.md` | main conversation |
-| Query | Generate questions from the request — no codebase access | isolated subagent, `Write`-only |
+| Query | Generate questions from the request — no codebase access | fresh subagent, no repository reads |
 | Research | Answer those questions by reading the codebase — facts only, no opinions | isolated subagent, full read tools |
 | Shape *(optional)* | Compare viable implementation approaches using the request and research context | isolated subagent, broad read tools |
 | Spec | Define what changes and what does not | main conversation |
@@ -61,16 +61,16 @@ Query and Research can loop: if research surfaces a question the code cannot ans
 To start a normal workflow, invoke the workflow skill with a feature name; it will capture the feature request in the Init step. For example:
 
 ```text
-/qrspi-x:workflow add-refresh-token-rotation
+$qrspi-workflow add-refresh-token-rotation
 ```
 
-The workflow creates artifacts under `./qrspi/<feature>/`. These artifacts are disposable scaffolding; the code is the source of truth. Add `qrspi/` to the project's `.gitignore`. If the artifacts are visible to git, they appear as uncommitted work and the helper reports a `dirty-tree` finding on every command. Init checks this and offers to add the entry.
+The workflow creates artifacts under `./.qrspi/<feature>/`. Existing `qrspi/` workspaces need an explicit move to `.qrspi/`; preserve their contents and stop if the destination already exists. Rebuild older helper installations so they use the new location. These artifacts are disposable scaffolding; the code is the source of truth. Add `.qrspi/` to the project's `.gitignore`. If the artifacts are visible to git, they appear as uncommitted work and the helper reports a `dirty-tree` finding on every command. Init checks this and offers to add the entry.
 
-Per-phase plan files live in `./qrspi/<feature>/plans/`, while the `plan.md` overview stays alongside the other feature artifacts. When Query, Research, Shape, or Spec reruns, the artifact it replaces moves to `./qrspi/<feature>/backups/` so no prior version is lost. An optional `background.md` can preserve human-supplied context and prior-art comparisons; it is not authoritative intent and is not automatically given to Query or Research. When Shape runs, `approach.md` records the alternatives, tradeoffs, and human-selected direction before Spec.
+Per-phase plan files live in `./.qrspi/<feature>/plans/`, while the `plan.md` overview stays alongside the other feature artifacts. When Query, Research, Shape, or Spec reruns, the artifact it replaces moves to `./.qrspi/<feature>/backups/` so no prior version is lost. An optional `background.md` can preserve human-supplied context and prior-art comparisons; it is not authoritative intent and is not automatically given to Query or Research. When Shape runs, `approach.md` records the alternatives, tradeoffs, and human-selected direction before Spec.
 
 ### Completion
 
-Once the final review passes, helper-assisted mode may offer to stop tracking the feature as active. This is advisory bookkeeping only; it does not delete the workflow artifacts. Interactive-only mode reports completion without state tracking. The workflow never cleans up `./qrspi/<feature>/` itself; disposing of any artifact there, done or not, is your call.
+Once the final review passes, helper-assisted mode may offer to stop tracking the feature as active. This is advisory bookkeeping only; it does not delete the workflow artifacts. Interactive-only mode reports completion without state tracking. The workflow never cleans up `./.qrspi/<feature>/` itself; disposing of any artifact there, done or not, is your call.
 
 ## How to run this well
 
@@ -78,9 +78,17 @@ The tooling does not enforce all of these practices. They are what make the proc
 
 **Use Query and Research to find the real intent, not just to check a finished task.** No fully formed feature request yet? Run them against a rough idea and use the results to rewrite `request.md` before Spec.
 
-**Review independently.** Every agent uses `model: inherit`, so isolation removes conversation history but not the model's blind spots. Run final Review in a different harness or with a different model than the one that ran Implement.
+**Review independently.** Agents inherit the session model and reasoning settings unless you choose otherwise, so isolation removes conversation history but retains the model's blind spots. Run final Review in a different harness or with a different model than the one that ran Implement.
 
 **Review the code and diff, not only the plan.** Skim the per-phase plan, inspect the actual diff at each phase boundary, and do one full pass at the end for how the phases fit together.
+
+## Traceable decisions and verification
+
+Specs label acceptance criteria `S1`, `S2`, and so on. Plans map behavior-sized steps to those IDs; implementation records actual verification and recoverable commits; reviews connect each conformance result and supported finding to its requirement. Findings need a reachable scenario and code or reproduction evidence.
+
+Spec and Plan record the input revisions they used. Human approvals and reviews identify exact artifact and code snapshots, including staged or dirty changes. Changed inputs require reassessment before execution or acceptance; progress-marker updates alone do not invalidate plan approval. These checks live in the skills, alongside the existing helper. Older artifacts need a human-reviewed migration that preserves progress and history.
+
+Each gate presents what changed, unresolved questions, tradeoffs, verification evidence, and the specific decision needed, with the full artifact available. See [the runtime contract](docs/runtime.md) for revision and evidence rules.
 
 ## Optional helper
 
@@ -101,7 +109,7 @@ Without the helper, interactive steps still run and remain human-gated. They use
 
 ## Optional autoloop
 
-`qrspi-x:autoloop` is an advanced execution mode for an approved specification and plan. It runs implementation and interim review unattended for one phase or all remaining phases:
+`qrspi-autoloop` is an advanced execution mode for an approved specification and plan. It runs implementation and interim review unattended for one phase or all remaining phases:
 
 ```md
 implement phase → review → PASS: next phase
@@ -109,7 +117,7 @@ implement phase → review → PASS: next phase
                                                              → FAIL: stop for you
 ```
 
-Compared with `qrspi-x:implement`:
+Compared with `qrspi-implement`:
 
 - implementation runs in one subagent per phase;
 - the loop gates at the phase or whole-plan boundary instead of every step;
@@ -123,18 +131,20 @@ Autoloop records its position through the helper before acting, so an interrupte
 
 ## Installation
 
-### Skills and agents
+### Codex skills and roles
 
-The workflow itself is installed from a source checkout. Clone this repository, then link the checkout into each agent runtime's skills/plugin location. A link keeps one checkout authoritative, so updates are available immediately:
+Each `skills/qrspi-*` folder is self-contained, including its runtime and role references. Copy those folders into the project's `.agents/skills/` directory or your personal `~/.agents/skills/` directory. Individual skill folders may also be symlinked. The full checkout does not need to sit under the discovery directory.
 
 ```bash
-git clone <repository-url> <path-to-qrspi-x>
-ln -s <path-to-qrspi-x> <workspace>/.claude/skills/qrspi-x
-ln -s <path-to-qrspi-x> <workspace>/.agents/skills/qrspi-x
-ln -s <path-to-qrspi-x> <workspace>/.bob/plugins/qrspi-x
+mkdir -p /path/to/project/.agents/skills
+cp -R /path/to/qrspi-x/skills/qrspi-* /path/to/project/.agents/skills/
 ```
 
-On Windows, use a directory junction (`mklink /J`) if available. If linking is not convenient, copy the checkout into those locations instead; repeat the copy after pulling updates. Use the appropriate workspace or home-level location for the runtime you are configuring. Once the links or copies exist, the `qrspi-x:<skill>` skills and their bundled agents are available. No npm package or helper CLI is required for the normal human-gated workflow.
+Use `$qrspi-workflow <feature-name>` in a Codex prompt, or invoke an individual skill such as `$qrspi-query` or `$qrspi-review`. These are prompt invocations; `qrspi-x` remains the separate helper command. If a newly copied skill does not appear, restart Codex.
+
+Read [Codex setup and migration](docs/codex.md) for the delegation authorization snippet and fresh-context requirements. Named-agent registration is optional: each caller supplies its complete bundled role and explicitly allowed inputs. If the client cannot start a role without inherited conversation history, Query, Research, and Review stop; run the role in a separate clean session with only its allowed inputs.
+
+The legacy Claude manifest and release machinery remain unmodified on this branch. These portable role files are not Claude named-agent definitions; the old plugin packaging is outside this port's finalized scope.
 
 ### Install the helper locally
 
@@ -171,7 +181,7 @@ npm i -g @ebullient/qrspi-x
 
 Releases are produced explicitly from the repository's manual release workflow and published to npm.
 
-For maintainer checks, helper development, and plugin contribution conventions, see [CONTRIBUTING.md](CONTRIBUTING.md).
+For maintainer checks, helper development, and skill and role contribution conventions, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## See also
 

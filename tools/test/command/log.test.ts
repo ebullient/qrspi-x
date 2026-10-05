@@ -23,7 +23,7 @@ describe("log implement", () => {
     });
 
     function root(): string {
-        return join(project, "qrspi", feature);
+        return join(project, ".qrspi", feature);
     }
 
     const planFixture = `
@@ -165,7 +165,7 @@ describe("log repair", () => {
     });
 
     function root(): string {
-        return join(project, "qrspi", feature);
+        return join(project, ".qrspi", feature);
     }
 
     it("is a documented alias: same validation, recorded under kind 'repair'", async () => {
@@ -210,7 +210,7 @@ describe("log review", () => {
     });
 
     function root(): string {
-        return join(project, "qrspi", feature);
+        return join(project, ".qrspi", feature);
     }
 
     it("blocks with no-verdict when the artifact has no Verdict line yet", async () => {
@@ -356,7 +356,7 @@ describe("start + log implement, end to end", () => {
     });
 
     function root(): string {
-        return join(project, "qrspi", feature);
+        return join(project, ".qrspi", feature);
     }
 
     it("pairs one begin with one end for a single phase completion", async () => {
@@ -418,7 +418,7 @@ describe("log park", () => {
     });
 
     function root(): string {
-        return join(project, "qrspi", feature);
+        return join(project, ".qrspi", feature);
     }
 
     it("appends a park entry with no --reason", async () => {

@@ -54,7 +54,7 @@ export const help: CommandHelp = {
             flag: "--project <path>",
             required: false,
             description:
-                "The project root holding ./qrspi/; defaults to the current directory.",
+                "The project root holding ./.qrspi/; defaults to the current directory.",
         },
     ],
 };

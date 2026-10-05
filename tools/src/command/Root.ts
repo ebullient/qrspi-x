@@ -7,11 +7,11 @@ import { type Workspace, workspaceAt } from "../workspace/Workspace.ts";
 import type { FlagHelp } from "./Help.ts";
 
 /**
- * Every command's workspace root: `./qrspi/<feature>/` under the user's
+ * Every command's workspace root: `./.qrspi/<feature>/` under the user's
  * project. See AGENTS.md's "Artifacts and state".
  */
 export function resolveRoot(project: string, feature: string): string {
-    return join(project, "qrspi", feature);
+    return join(project, ".qrspi", feature);
 }
 
 /**
@@ -49,12 +49,12 @@ export const commonOptions: FlagHelp[] = [
     {
         flag: "--feature <feature>",
         required: true,
-        description: "The feature workspace under ./qrspi/.",
+        description: "The feature workspace under ./.qrspi/.",
     },
     {
         flag: "--project <path>",
         required: false,
         description:
-            "The project root holding ./qrspi/; defaults to the current directory.",
+            "The project root holding ./.qrspi/; defaults to the current directory.",
     },
 ];

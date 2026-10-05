@@ -26,7 +26,7 @@ describe("loop start", () => {
     });
 
     function root(): string {
-        return join(project, "qrspi", feature);
+        return join(project, ".qrspi", feature);
     }
 
     it("resolves scope and returns phaseIds on success", async () => {
@@ -100,7 +100,7 @@ describe("loop advance", () => {
     });
 
     function root(): string {
-        return join(project, "qrspi", feature);
+        return join(project, ".qrspi", feature);
     }
 
     it("moves scope to the next phase once the current one is [x]", async () => {
@@ -142,7 +142,7 @@ describe("loop stop", () => {
     });
 
     function root(): string {
-        return join(project, "qrspi", feature);
+        return join(project, ".qrspi", feature);
     }
 
     it("records stoppedReason in loop-state.json and a loop/stop entry in history", async () => {
@@ -189,7 +189,7 @@ describe("loop ok", () => {
     });
 
     function root(): string {
-        return join(project, "qrspi", feature);
+        return join(project, ".qrspi", feature);
     }
 
     it("clears stoppedReason, writes a reason to history when given, and returns the next action", async () => {
@@ -263,7 +263,7 @@ describe("loop abandon", () => {
     });
 
     function root(): string {
-        return join(project, "qrspi", feature);
+        return join(project, ".qrspi", feature);
     }
 
     it("removes loop-state.json and writes a loop/abandon entry to history", async () => {

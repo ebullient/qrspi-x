@@ -17,7 +17,7 @@ describe("next-file", () => {
     });
 
     function root(): string {
-        return join(project, "qrspi", feature);
+        return join(project, ".qrspi", feature);
     }
 
     it("returns the first backup path when backups/ doesn't exist yet", async () => {

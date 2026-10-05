@@ -32,4 +32,4 @@ Paths below are relative to `tools/`.
 - Fetches title and body via `gh issue view` / `gh pr view`, falling back to unauthenticated public REST API if `gh` is unavailable.
 - Derives feature workspace name `gh-<repo>-<n>` or uses explicit `--feature <name>`.
 - Refuses to overwrite an existing feature directory (`feature-exists`).
-- Writes `# <title>\n\n<body>\n` into `./qrspi/<feature>/request.md`.
+- Writes `# <title>\n\n<body>\n` into `./.qrspi/<feature>/request.md`.
