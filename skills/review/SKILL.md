@@ -14,6 +14,8 @@ compatibility: Node 22+
 
 This skill is part of the QRSPI workflow and is normally invoked by `qrspi-x:workflow`. It may also be invoked directly.
 
+Runtime contract: read `../workflow/references/runtime.md` before dispatch. It defines the fresh-context, capability, fallback, and on-disk evidence requirements; this skill adds only Review-specific inputs and output.
+
 ## The helper
 Helper installation, state tracking, recovery, and artifact-only fallback are defined by `qrspi-x:workflow`. When the helper is available, get the next label from `qrspi-x next-file review`/`next-file final` (always pass the exact phase being reviewed via `--phase <N>` — `status` has no `--phase` option and silently ignores it, falling back to whatever phase it derives as currently active, which is the *next* phase to implement once the one just reviewed is complete, not the one being reviewed) and record the verdict with `qrspi-x log review --feature <feature> --project <path> --label <label>`; never compose a label by hand. If it exits 127, continue this interactive step without state tracking. Never edit any helper state manually.
 

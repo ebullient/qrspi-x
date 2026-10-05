@@ -13,6 +13,8 @@ compatibility: Node 22+
 
 This skill is part of the QRSPI workflow and is normally invoked by `qrspi-x:workflow`. It may also be invoked directly.
 
+Runtime contract: read `../workflow/references/runtime.md` before dispatch. It defines the fresh-context, filesystem, fallback, and on-disk evidence requirements; this skill adds only Research-specific inputs and output.
+
 ## The helper
 Helper installation, recovery, and artifact-only fallback are defined by `qrspi-x:workflow`. Research has no `qrspi-x` state of its own; when the helper is available it's used only for backup naming on a rerun and for recording why, per the Task steps below. If it exits 127, continue this interactive step without it. Never edit any helper state manually.
 

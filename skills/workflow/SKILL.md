@@ -19,6 +19,8 @@ These apply to all QRSPI skills:
 - **Humans gate every transition** — work stops at the gate and waits; never carry on past it automatically. The granularity varies: `qrspi-x:workflow` gates every step, `qrspi-x:autoloop` gates at the phase or the whole plan. The gate itself does not move — nothing is integrated without a human reviewing it.
 - **Single responsibility** — each step does one job and nothing from the steps around it
 
+The canonical runtime contract is [references/runtime.md](references/runtime.md). Read it when dispatching roles or reasoning about runtime capabilities; adapter-specific guidance must point back to it rather than copy it.
+
 ## The helper
 
 The helper is recommended for interactive work and required for `autoloop`. Install it globally from the `@ebullient/qrspi-x` npm package. Choose the Helper-assisted or Interactive-only workflow below; never read or edit `loop-state.json` or `history.jsonl` directly.

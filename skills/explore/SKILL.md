@@ -13,6 +13,8 @@ disable-model-invocation: false
 
 This skill is part of the QRSPI workflow and is normally invoked by `qrspi-x:workflow`. It may also be invoked directly. Helper state is not used for Explore; the exploration artifact is the source of progress.
 
+Runtime contract: read `../workflow/references/runtime.md` before dispatch. It defines the fresh-context, capability, fallback, and on-disk evidence requirements; this skill adds only Explore-specific inputs and output.
+
 ## Task
 Before spawning, prefer the declared agent when the runtime supports named agents:
 

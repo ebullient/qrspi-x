@@ -14,6 +14,8 @@ compatibility: Node 22+
 
 This skill is part of the QRSPI workflow and is normally invoked by `qrspi-x:workflow`. It may also be invoked directly. Unlike the interactive skills, it requires the helper and cannot fall back to artifact-only mode.
 
+Runtime contract: read `../workflow/references/runtime.md` before each role dispatch. It defines the fresh-context, capability, fallback, and on-disk evidence requirements; this skill adds only Autoloop's unattended sequencing and helper lifecycle.
+
 ## What this is
 
 Autoloop is the unattended sibling of `qrspi-x:workflow`. The human approves the scope and readiness at entry, then owns the final review; autoloop implements each phase, reviews it, repairs once after a failure, and advances or stops.
