@@ -12,8 +12,6 @@ compatibility: Node 22+
 - Only review, never fix
 - Review against the spec; the plan only sets the scope
 
-This skill is part of the QRSPI workflow and is normally invoked by `qrspi-x:workflow`. It may also be invoked directly.
-
 Runtime contract: read `../workflow/references/runtime.md` before dispatch. It defines the fresh-context, capability, fallback, and on-disk evidence requirements; this skill adds only Review-specific inputs and output.
 
 ## The helper
@@ -48,13 +46,9 @@ Diff / Phase / Label: identical to the reviewer's
 
 Prefer the declared agents whenever the runtime supports named agents, so it can apply their declared settings. For a role that is not registered, read its bundled definition (`../../agents/reviewer.md` or `../../agents/explainer.md`), resolved relative to this `SKILL.md`, and spawn a general-purpose subagent with the file contents as its role instructions.
 
-Then go to **After the Reviewer Returns**.
-
 ## Reviewer Agent
 
-The reviewer reads `spec.md` as the standard it reviews against and the plan files to establish the boundaries of the review, runs the diff, and writes a verdict to `./qrspi/<feature>/reviews/<label>.md`.
-
-Running it as a subagent keeps diff output and file reads out of the main conversation context while preserving the QRSPI-specific spec conformance check that generic code review tools lack.
+The reviewer reads `spec.md` as the standard, uses plan files for review boundaries, runs the diff, and writes `./qrspi/<feature>/reviews/<label>.md`. Running it as a subagent keeps diff output and file reads out of the main context while preserving QRSPI-specific spec conformance.
 
 ### Scope guidance
 
@@ -73,34 +67,30 @@ For a phase checkpoint also pass `Phase: N`, and `Checkpoint step: M` mid-phase 
 
 ## Explainer Agent
 
-Optional and opt-in, never a standing part of the flow. Ask: "Also generate an explanation of this change? (`qrspi-x:explainer` — a narrative walkthrough of what changed and why, independent of and isolated from the reviewer; not a verification step, just faster orientation.)" It can be offered for either final or checkpoint reviews. Wait for the answer, and spawn it only on a clear yes.
+Ask: "Also generate an explanation of this change? (`qrspi-x:explainer` — a narrative walkthrough of what changed and why, independent of and isolated from the reviewer; not a verification step, just faster orientation.)" It is available for final or checkpoint reviews; spawn it only on a clear yes.
 
 ### Output
 
 The explainer writes to `./qrspi/<feature>/explain/<label>.md`, reusing the reviewer's label so the pair is findable together. Labels must be non-empty kebab-case path components.
 
-Treat the explainer's output as unverified narrative, not a substitute for the diff or for the reviewer's findings — if the two disagree about what the code does, that disagreement is itself worth looking at before trusting either one.
+Treat the explainer's output as unverified narrative, never a substitute for the diff or review findings; investigate disagreements about what the code does.
 
 ## Running other review tools
 
-This review's contribution is narrow — it checks the diff against `spec.md` and writes the verdict artifact the workflow records — and it is not a better bug-finder than a dedicated review tool. So:
+This review checks the diff against `spec.md` and writes the workflow's verdict artifact; dedicated review tools may find different bugs. So:
 
-- **Offer compatible reviewers as delegated inputs.** `/code-review`, `/security-review`, a project reviewer, a linter, or a human may be useful. Run selected review skills over the exact same diff and ask each to run its normal subagents, then collate every result — including source attribution and disagreements — into one complete, readable report under `./qrspi/<feature>/reviews/supplemental/` before the QRSPI reviewer starts.
+- **Offer compatible reviewers as delegated inputs.** `/code-review`, `/security-review`, a project reviewer, a linter, or a human may be useful. Run selected review skills over the exact diff, then collate every result, source attribution, and disagreement into one report under `./qrspi/<feature>/reviews/supplemental/` before the QRSPI reviewer starts.
 - **Give the collated reports to the QRSPI reviewer.** Pass their paths in `Supplemental review reports`; do not pass an uncollated pile of specialist replies when the delegated skill can summarize them.
 - **Keep the QRSPI reviewer authoritative.** Delegated reports are advisory leads. The reviewer independently checks the code, then validates each relevant finding against the spec and scope. Accepted findings go into the normal review artifact; duplicates, rejected findings, and out-of-scope observations are recorded in `## Supplemental Reviews` only.
 - **Do not require delegation in unattended loops.** `autoloop` may use a supplemental reviewer only when it has a stable non-interactive contract and report output; otherwise it keeps the existing QRSPI-only review.
 
 ## After the Reviewer Returns
 
-1. Confirm `./qrspi/<feature>/reviews/<label>.md` exists before anything else. Do not write it yourself from the reviewer's reply: that reply is a verdict line, so the artifact would have no findings table and no Spec Conformance list — and a repair pass reads its fixes from those. Re-spawn the reviewer with the same label and diff, asking it to write the artifact.
+1. Confirm `./qrspi/<feature>/reviews/<label>.md` exists before anything else. Never write it from the reviewer's reply: repair reads the findings table and Spec Conformance list from the artifact. If absent, re-spawn with the same label and diff.
 2. Read the verdict the reviewer reports (PASS / PASS WITH CONDITIONS / FAIL).
 3. If the explainer was also spawned, note that `explain/<label>.md` is available as supplementary reading — do not merge its content into the verdict or treat it as part of the review.
 4. If the helper is available, run `qrspi-x log review --feature <feature> --project <path> --label <label>` and surface returned findings. The helper reads the verdict from the artifact.
-5. Stop and wait for the human's decision on how to proceed:
-   - **FAIL** — offer to fix and re-implement, revise the spec, or revise the plan. A finding means the code missed the spec, so fixing the code is usually the answer; revise the spec only when the finding shows the spec itself was wrong, and the plan only when the remaining steps no longer fit.
-   - **PASS WITH CONDITIONS** — offer to address findings, then re-review.
-   - **PASS, mid-phase checkpoint** — offer to continue with the next incomplete step in the same phase.
-   - **PASS, phase complete** — offer to continue with the next phase, or Final Review if this was the last one.
+5. Stop for the human's decision: **FAIL** offers fix/re-implement/spec/plan options; **PASS WITH CONDITIONS** offers address-and-re-review; **PASS** at a checkpoint continues the phase, otherwise the next phase or Final Review.
 
 Do not fix issues or create PRs automatically.
 
