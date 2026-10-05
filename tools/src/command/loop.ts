@@ -126,7 +126,7 @@ export async function start(
         // whatever resolveScope() throws (DependencyCycleError,
         // UnknownPhaseError, or a plain Error for a malformed selector,
         // e.g. an invalid range) unwrapped — every one of them means the
-        // same thing here: refuse, write nothing (§2.6).
+        // same thing here: refuse, write nothing.
         if (err instanceof Error) {
             return blocked([{ code: "loop-refused", message: err.message }]);
         }

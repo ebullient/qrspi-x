@@ -240,6 +240,219 @@ describe("cli", () => {
         expect(stderr[0]).toContain('Unknown option "--feature-name"');
     });
 
+    it("dispatches plugin install and passes --release through", async () => {
+        const stdout: string[] = [];
+        const stderr: string[] = [];
+
+        const exitCode = await main(
+            ["plugin", "install", "--release", "not-a-real-tag"],
+            {
+                cwd: ".",
+                stdout: (line) => stdout.push(line),
+                stderr: (line) => stderr.push(line),
+            },
+        );
+
+        expect(exitCode).toBe(1);
+        expect(stdout).toHaveLength(1);
+    });
+
+    it("dispatches plugin init and passes --agent through", async () => {
+        const stdout: string[] = [];
+        const stderr: string[] = [];
+
+        const exitCode = await main(["plugin", "init", "--agent", "cursor"], {
+            cwd: ".",
+            stdout: (line) => stdout.push(line),
+            stderr: (line) => stderr.push(line),
+        });
+
+        expect(exitCode).toBe(1);
+        expect(stdout).toHaveLength(1);
+        expect(stdout[0]).toContain("cursor");
+    });
+
+    it("requires --agent for plugin init", async () => {
+        const stderr: string[] = [];
+
+        const exitCode = await main(["plugin", "init"], {
+            cwd: ".",
+            stdout: () => {},
+            stderr: (line) => stderr.push(line),
+        });
+
+        expect(exitCode).toBe(2);
+        expect(stderr[0]).toContain("--agent is required");
+    });
+
+    it("accepts --copy and --symlink as boolean flags on plugin init", async () => {
+        const stdout: string[] = [];
+        const stderr: string[] = [];
+
+        const exitCode = await main(
+            ["plugin", "init", "--agent", "cursor", "--copy", "--symlink"],
+            {
+                cwd: ".",
+                stdout: (line) => stdout.push(line),
+                stderr: (line) => stderr.push(line),
+            },
+        );
+
+        // Both flags parse as plain booleans here (no "requires a value"
+        // usage error) — runInit itself is what rejects the combination,
+        // which is already covered in plugin.test.ts, not re-tested here.
+        expect(exitCode).toBe(1);
+        expect(stderr).toEqual([]);
+    });
+
+    it("dispatches plugin init and passes --force through as a boolean flag", async () => {
+        const stdout: string[] = [];
+        const stderr: string[] = [];
+
+        const exitCode = await main(
+            ["plugin", "init", "--agent", "cursor", "--force"],
+            {
+                cwd: ".",
+                stdout: (line) => stdout.push(line),
+                stderr: (line) => stderr.push(line),
+            },
+        );
+
+        // Exercises dispatch/flag-passthrough only, the same way plugin
+        // remove's own --force dispatch test does: an unknown agent
+        // name fails fast inside runInit before --force is ever
+        // consulted. runInit's own --force behavior is covered in
+        // plugin.test.ts, not re-tested here.
+        expect(exitCode).toBe(1);
+        expect(stderr).toEqual([]);
+        expect(stdout).toHaveLength(1);
+        expect(stdout[0]).toContain("cursor");
+    });
+
+    it("dispatches plugin status with no flags", async () => {
+        const stdout: string[] = [];
+        const stderr: string[] = [];
+
+        const exitCode = await main(["plugin", "status"], {
+            cwd: ".",
+            stdout: (line) => stdout.push(line),
+            stderr: (line) => stderr.push(line),
+        });
+
+        // Exercises dispatch only — runStatus's own behavior (install
+        // state, per-agent probing, freshness degradation) is covered in
+        // plugin.test.ts, not re-tested here. It never refuses, so this
+        // always succeeds regardless of local install state.
+        expect(exitCode).toBe(0);
+        expect(stdout).toHaveLength(1);
+        expect(stderr).toEqual([]);
+    });
+
+    it("rejects a stray positional argument on plugin status", async () => {
+        const stderr: string[] = [];
+
+        const exitCode = await main(["plugin", "status", "extra"], {
+            cwd: ".",
+            stdout: () => {},
+            stderr: (line) => stderr.push(line),
+        });
+
+        expect(exitCode).toBe(2);
+        expect(stderr[0]).toContain("plugin requires exactly one action");
+    });
+
+    it("dispatches plugin update and passes --release through", async () => {
+        const stdout: string[] = [];
+        const stderr: string[] = [];
+
+        const exitCode = await main(
+            ["plugin", "update", "--release", "not-a-real-tag"],
+            {
+                cwd: ".",
+                stdout: (line) => stdout.push(line),
+                stderr: (line) => stderr.push(line),
+            },
+        );
+
+        // Exercises dispatch/flag-passthrough only, the same way the
+        // plugin install dispatch test above does: an invalid tag fails
+        // fast inside runUpdate's own runInstall call, before any agent
+        // probing against the real home directory. runUpdate's own
+        // behavior is covered in plugin.test.ts, not re-tested here.
+        expect(exitCode).toBe(1);
+        expect(stdout).toHaveLength(1);
+    });
+
+    it("dispatches plugin update and passes --force through as a boolean flag", async () => {
+        const stdout: string[] = [];
+        const stderr: string[] = [];
+
+        const exitCode = await main(
+            ["plugin", "update", "--release", "not-a-real-tag", "--force"],
+            {
+                cwd: ".",
+                stdout: (line) => stdout.push(line),
+                stderr: (line) => stderr.push(line),
+            },
+        );
+
+        // Exercises dispatch/flag-passthrough only, the same way the
+        // plugin update dispatch test above does: an invalid tag fails
+        // fast inside runUpdate's own runInstall call, before --force
+        // is ever consulted. runUpdate's own --force behavior is
+        // covered in plugin.test.ts, not re-tested here.
+        expect(exitCode).toBe(1);
+        expect(stderr).toEqual([]);
+        expect(stdout).toHaveLength(1);
+    });
+
+    it("dispatches plugin remove and passes --agent and --force through", async () => {
+        const stdout: string[] = [];
+        const stderr: string[] = [];
+
+        const exitCode = await main(
+            ["plugin", "remove", "--agent", "cursor", "--force"],
+            {
+                cwd: ".",
+                stdout: (line) => stdout.push(line),
+                stderr: (line) => stderr.push(line),
+            },
+        );
+
+        // Exercises dispatch/flag-passthrough only, the same way plugin
+        // init's own dispatch test does: an unknown agent name fails
+        // fast inside runRemove before any probing against the real
+        // home directory. runRemove's own behavior is covered in
+        // plugin.test.ts, not re-tested here.
+        expect(exitCode).toBe(1);
+        expect(stdout).toHaveLength(1);
+        expect(stdout[0]).toContain("cursor");
+    });
+
+    it("renders plugin --help without requiring --feature or --project, listing all five actions coherently", async () => {
+        const stdout: string[] = [];
+        const stderr: string[] = [];
+
+        const exitCode = await main(["--help", "plugin"], {
+            cwd: ".",
+            stdout: (line) => stdout.push(line),
+            stderr: (line) => stderr.push(line),
+        });
+
+        expect(exitCode).toBe(0);
+        expect(stdout[0]).toContain("Actions:");
+        for (const action of [
+            "install",
+            "init",
+            "status",
+            "update",
+            "remove",
+        ]) {
+            expect(stdout[0]).toContain(`${action} -`);
+        }
+        expect(stderr).toEqual([]);
+    });
+
     it("rejects an unknown flag on an action-scoped command", async () => {
         const stderr: string[] = [];
 

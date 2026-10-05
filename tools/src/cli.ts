@@ -11,6 +11,7 @@ import * as importCmd from "./command/import.ts";
 import * as log from "./command/log.ts";
 import * as loop from "./command/loop.ts";
 import * as nextFile from "./command/next-file.ts";
+import * as plugin from "./command/plugin.ts";
 import { type CommandResult, toJson } from "./command/Result.ts";
 import * as start from "./command/start.ts";
 import * as status from "./command/status.ts";
@@ -34,6 +35,7 @@ export const commandHelps: CommandHelp[] = [
     start.help,
     status.help,
     importCmd.help,
+    plugin.help,
 ];
 
 const commandNames = new Set(commandHelps.map((entry) => entry.name));
@@ -83,18 +85,20 @@ export async function main(
         const { positionals, options } = parseOptions(argv.slice(1));
         validateOptions(command, positionals, options);
         const result =
-            command === "import"
-                ? await dispatchImport(
-                      positionals,
-                      options,
-                      projectAndOptionalFeature(options, io.cwd),
-                  )
-                : await dispatch(
-                      command,
-                      positionals,
-                      options,
-                      projectAndFeature(options, io.cwd),
-                  );
+            command === "plugin"
+                ? await dispatchPlugin(positionals, options)
+                : command === "import"
+                  ? await dispatchImport(
+                        positionals,
+                        options,
+                        projectAndOptionalFeature(options, io.cwd),
+                    )
+                  : await dispatch(
+                        command,
+                        positionals,
+                        options,
+                        projectAndFeature(options, io.cwd),
+                    );
         if (typeof result === "string") {
             io.stdout(result);
         } else if (Array.isArray(result)) {
@@ -156,7 +160,13 @@ function parseOptions(args: string[]): {
         const equals = token.indexOf("=");
         const name = equals === -1 ? token : token.slice(0, equals);
         const attached = equals === -1 ? undefined : token.slice(equals + 1);
-        if (name === "--loop" || name === "--all") {
+        if (
+            name === "--loop" ||
+            name === "--all" ||
+            name === "--copy" ||
+            name === "--symlink" ||
+            name === "--force"
+        ) {
             setOption(options, name.slice(2), true);
             continue;
         }
@@ -344,6 +354,38 @@ async function dispatchImport(
         feature: common.feature,
         repo,
     });
+}
+
+async function dispatchPlugin(
+    positionals: string[],
+    options: Options,
+): Promise<CommandResult> {
+    const action = singleAction("plugin", positionals);
+    switch (action) {
+        case "install":
+            return plugin.runInstall({ release: optional(options, "release") });
+        case "init":
+            return plugin.runInit({
+                agent: required(options, "agent"),
+                copy: options.copy === true,
+                symlink: options.symlink === true,
+                force: options.force === true,
+            });
+        case "status":
+            return plugin.runStatus();
+        case "update":
+            return plugin.runUpdate({
+                release: optional(options, "release"),
+                force: options.force === true,
+            });
+        case "remove":
+            return plugin.runRemove({
+                agent: required(options, "agent"),
+                force: options.force === true,
+            });
+        default:
+            throw new UsageError(`Unknown plugin action "${action}"`);
+    }
 }
 
 function singleAction(command: string, positionals: string[]): string {

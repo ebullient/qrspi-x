@@ -38,5 +38,9 @@
     "backfillLimit": false,
     "commitLimit": false,
     "ignoreCommitPattern": "(🔖|🔨|🧹|changelog|release|Update README).*"
+  },
+  "dependencies": {
+    "@types/yauzl": "^3.4.0",
+    "yauzl": "^3.4.0"
   }
 }

@@ -202,8 +202,8 @@ export async function review(
             ? [parseVerdictSummary(text) ?? ""]
             : undefined;
 
-    // Closes start review's "begin" for this label (§2.2/§2.3); idempotent
-    // per kind+label (§1.6), same mechanism as logImplement above.
+    // Closes start review's "begin" for this label; idempotent per
+    // kind+label, same mechanism as logImplement above.
     await history.conditionalAppend(
         { kind: "review", label: opts.label },
         { action: "end" },

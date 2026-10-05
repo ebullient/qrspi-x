@@ -34,6 +34,11 @@ await build({
     platform: "node",
     format: "esm",
     target: "node22",
+    // yauzl is CJS and uses a dynamic `require` esbuild can't translate
+    // into ESM; left external, Node resolves it normally from
+    // node_modules at runtime (it's a real "dependencies" entry, so
+    // it's always present wherever this package is installed).
+    external: ["yauzl"],
     define: {
         __QRSPI_VERSION__: JSON.stringify(buildVersion),
     },
