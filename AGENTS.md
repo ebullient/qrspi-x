@@ -6,7 +6,7 @@ Most of this repo is markdown, with the private TypeScript helper under `tools/`
 
 ## Layout
 
-```
+```text
 skills/<name>/SKILL.md    one skill per directory, always named SKILL.md
 agents/<name>.md          one agent per file
 .claude-plugin/           plugin manifest (name, version)
@@ -78,6 +78,8 @@ If you add another orchestrator, state its gate granularity in the skill itself.
 Write instructions that say what to do and why, in that order, with the reason attached to anything counterintuitive. An agent that knows *why* a rule exists follows it in situations the rule didn't anticipate; one that only knows the rule optimizes it away the first time it looks redundant. The "never batch the bookkeeping" note in `implementer` is the pattern: the rule, then one sentence on what breaks without it.
 
 Prefer mechanical criteria over judgment where a rule has to hold. The reviewer's verdict rules are a table, not a vibe, which is why the verdict is reproducible.
+
+Use braced blocks for returns controlled by `if` statements; do not use single-line returns, even though they are syntactically valid, because they are easy to miss during review.
 
 Second person for agents ("You are a QRSPI..."), imperative for skills. Match the surrounding file.
 

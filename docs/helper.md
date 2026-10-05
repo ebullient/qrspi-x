@@ -28,7 +28,7 @@ Paths below are relative to `tools/`. Each module under `src/workspace/` (and an
 - history
 - log
 - loop
-- next-filez
+- next-file
 - start
 - status
 
