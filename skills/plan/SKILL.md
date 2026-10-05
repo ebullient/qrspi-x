@@ -11,8 +11,6 @@ compatibility: Node 22+
 ## Core Philosophy
 - Only create the implementation roadmap
 
-This skill is part of the QRSPI workflow and is normally invoked by `qrspi-x:workflow`. It may also be invoked directly.
-
 ## The helper
 Helper installation, recovery, and artifact-only fallback are defined by `qrspi-x:workflow`. Plan has no `qrspi-x` state or backup stem of its own; when the helper is available it's used only for recording why on a revision, per the Task steps below. If it exits 127, continue this interactive step without it. Never edit any helper state manually.
 
@@ -36,7 +34,6 @@ The plan is always two layers:
 |-------|------|------------|-------------|-------|--------|
 | 1 | [Short name] | none | [What this phase accomplishes] | 5 | [ ] |
 | 2 | [Short name] | 1 | [What this phase accomplishes] | 4 | [ ] |
-| 3 | [Short name] | 1, 2 | [What this phase accomplishes] | 3 | [ ] |
 ```
 
 `Depends On` contains only direct prerequisite phase IDs, or `none`. The table's phase order is the default presentation/execution order; it does not imply a dependency.
@@ -58,9 +55,6 @@ A phase id is a number, optionally followed by one lowercase letter (`1`, `2`, `
 - Criteria: S1, S2 — behavior delivered or preserved by this step
 - Tests: How to verify this step
 - Risk: [Low/Medium/High] - why
-
-### Step 2: [Brief description]
-...
 ```
 
 Phase files live in `./qrspi/<feature>/plans/`; `plan.md` stays in the workspace root. Step numbers are local to each phase file — each phase starts at Step 1. For small plans (≤5 steps total), use a single phase; `plan.md` is still the overview, `plans/plan-phase-1.md` has all steps.
@@ -78,11 +72,10 @@ Discovering mid-implementation that the plan is missing a piece of work — a ga
 This is the mechanism behind `qrspi-x:workflow`'s "Back to Plan" option after a FAIL. Realizing mid-implementation that the plan missed something is an ordinary outcome of doing the work, not a failure to avoid — that's exactly what this exists for.
 
 ## Planning Principles
+
 - Size each step around one independently verifiable behavior and a recoverable commit, rather than an estimated duration. Split work that has multiple unrelated outcomes; keep code and its meaningful verification together.
 - Map every active spec criterion to one or more steps; make intentional coverage overlap explicit. Never invent a criterion or silently omit one.
 - Steps within a phase should be ordered to minimize breaking changes
-- Include test updates alongside code changes
-- Flag steps that might need extra attention
 - Ensure each step is independently reviewable
 - Phases are vertical slices: each phase ends with a thin, working, testable piece of behavior that cuts through every layer it needs (e.g. "create item end to end", then "list items end to end"), not a horizontal layer (all data layer, then all API). Layer-by-layer phases hide integration bugs until the last phase.
 - Phases may be listed in a convenient default order, but only concrete prerequisites create dependencies. Independent phases remain unlinked even when they are listed consecutively.
