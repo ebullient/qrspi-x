@@ -86,6 +86,17 @@ npm run fullbuild
 
 The release workflow publishes the helper and updates the release metadata. Do not bump versions by hand.
 
+To try the `qrspi-x` binary itself from a source checkout, instead of the published package, link it onto your `PATH`:
+
+```bash
+cd tools
+npm ci
+npm run build
+npm link
+```
+
+This registers the local `@ebullient/qrspi-x` package globally. The linked command runs the bundled file at `tools/dist/qrspi-x.mjs`, so re-run `npm run build` after changing TypeScript under `tools/src/` to pick up the change. If you are testing the helper as a dependency of another local project, run `npm link @ebullient/qrspi-x` from that project's directory after creating the global link above. To remove the local global link: `npm unlink -g @ebullient/qrspi-x`.
+
 ## Artifacts and persisted state
 
 Workflow artifacts belong to the project using QRSPI-X, not this repository. They live under `./qrspi/<feature>/`, are disposable scaffolding, and are never committed as product files.

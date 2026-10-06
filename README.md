@@ -2,10 +2,26 @@
 
 A modified version of Dexter Horthy's QRSPI method for spec-driven, human-gated feature development with coding agents. QRSPI-X is a portable package of skills, role definitions, and an optional helper, with runtime adapters for Claude Code, Codex, and IBM Bob.
 
-This README is for the human running the workflow. `AGENTS.md`, `skills/*/SKILL.md` and `agents/*.md` files are instructions for the agents. This file explains the portable workflow contract, runtime adapters, and how to [install](#installation) it. Maintainer and contributor guidance lives in [CONTRIBUTING.md](CONTRIBUTING.md).
+This README is for the human running the workflow; `AGENTS.md`, `skills/*/SKILL.md`, and `agents/*.md` are instructions for the agents. Maintainer and contributor guidance lives in [CONTRIBUTING.md](CONTRIBUTING.md).
 
-> [!WARNING]
-> An optional utility, `qrspi-x` is still experimental and the official `@ebullient/qrspi-x` npm package has not been published yet. The skills and agents do not require it. Until it is released, use the [local helper install](#local-development-install) described below if you want helper-assisted workflows.
+> [!NOTE]
+> The optional [`qrspi-x` helper](#optional-helper) is still experimental. Only the [autoloop](#optional-autoloop) skill requires it.
+
+## Quick start
+
+```bash
+npm i -g @ebullient/qrspi-x
+qrspi-x plugin install
+qrspi-x plugin init --agent claude   # or codex, or bob
+```
+
+Then, in your project, with your agent:
+
+```text
+/qrspi-x:workflow add-refresh-token-rotation
+```
+
+See [Installation](#installation) for the manual (no-npm) install path and other options.
 
 ## What QRSPI-X does
 
@@ -15,27 +31,7 @@ QRSPI-X gives coding-agent work a sequence of small, human-approved stages:
 (Explore) → Init → Query ⇄ Research → [Shape] → Spec → Plan → Implement → Review
 ```
 
-Each stage has one job. The human approves the result before the workflow advances, and can send the work back to an earlier stage when the request, evidence, design, or plan needs revision.
-
-The workflow is designed to make the important decisions visible before code is written:
-
-- intent is captured before research begins;
-- research is separated from the feature discussion so it gathers facts rather than rationalizing a solution;
-- optional Shape compares approaches when the direction is not obvious;
-- phase boundaries are approved before the detailed plan is written;
-- implementation happens in small, reviewable steps;
-- Review checks the code against the approved specification.
-
-## Why this exists
-
-Horthy's retrospective on Research-Plan-Implement (['Everything We Got Wrong About Research-Plan-Implement'](https://www.youtube.com/watch?v=YwZR6tc7qYg)) found four recurring problems:
-
-- Research done with knowledge of the intended feature turns into opinions instead of facts.
-- One giant planning prompt overloads the model.
-- 1,000-line plans take as long to read as the code they produce.
-- Plans that go layer by layer (all DB, then all services, then all API) hide integration bugs until the end.
-
-QRSPI-X addresses each one:
+Each stage has one job. The human approves the result before the workflow advances, and can send the work back to an earlier stage when the request, evidence, design, or plan needs revision. This is QRSPI-X's answer to four recurring problems with plain Research-Plan-Implement, from Dexter Horthy's retrospective (['Everything We Got Wrong About Research-Plan-Implement'](https://www.youtube.com/watch?v=YwZR6tc7qYg)):
 
 - **Research gets biased by the feature idea** → Query and Research each run in their own isolated subagent with limited tools. Query only gets `Write` — it cannot read the codebase even if it tried. Neither subagent sees the other's reasoning or the main conversation.
 - **Plans are unreadable** → the plan has two layers: a short phase overview (`plan.md`) you can read in one pass, and per-phase detail files you open when implementing that phase.
@@ -56,21 +52,17 @@ QRSPI-X addresses each one:
 | Implement | Execute one step at a time, commit per phase or per step, and pause for approval | main conversation |
 | Review | Adversarially check the change against the spec and plan | isolated subagent(s), full read tools |
 
-Query and Research can loop: if research surfaces a question the code cannot answer, return to Query and then Research. Shape is optional; use it when multiple implementation approaches remain. Everything after Spec runs in order, but an approval point can send the work back to Research, Shape, Spec, or Plan.
+Query and Research can loop: if research surfaces a question the code cannot answer, return to Query and then Research. Shape is optional; use it when multiple implementation approaches remain. Everything after Spec runs in order, but an approval point can send the work back to Research, Shape, Spec, or Plan. Invoking the workflow skill with a feature name (see [Quick start](#quick-start)) captures the feature request in the Init step.
 
-To start a normal workflow, invoke the workflow skill with a feature name; it will capture the feature request in the Init step. For example:
+Once the final review passes, helper-assisted mode may offer to stop tracking the feature as active — advisory bookkeeping only, it does not delete the workflow artifacts. Interactive-only mode reports completion without state tracking. The workflow never cleans up `./qrspi/<feature>/` itself; disposing of any artifact there, done or not, is your call.
 
-```text
-/qrspi-x:workflow add-refresh-token-rotation
-```
+## Workspace and artifacts
 
-The workflow creates artifacts under `./qrspi/<feature>/`. These artifacts are disposable scaffolding; the code is the source of truth. Add `qrspi/` to the project's `.gitignore`. If the artifacts are visible to git, they appear as uncommitted work and the helper reports a `dirty-tree` finding on every command. Init checks this and offers to add the entry.
+The workflow creates artifacts under `./qrspi/<feature>/`. These are disposable scaffolding, not the source of truth. Per-phase plan files live in `plans/`; `plan.md` stays alongside the other feature artifacts. When Query, Research, Shape, or Spec reruns, the artifact it replaces moves to `backups/` so no prior version is lost. An optional `background.md` can preserve human-supplied context and prior-art comparisons; it is not authoritative intent and is not automatically given to Query or Research. When Shape runs, `approach.md` records the alternatives, tradeoffs, and human-selected direction before Spec.
 
-Per-phase plan files live in `./qrspi/<feature>/plans/`, while the `plan.md` overview stays alongside the other feature artifacts. When Query, Research, Shape, or Spec reruns, the artifact it replaces moves to `./qrspi/<feature>/backups/` so no prior version is lost. An optional `background.md` can preserve human-supplied context and prior-art comparisons; it is not authoritative intent and is not automatically given to Query or Research. When Shape runs, `approach.md` records the alternatives, tradeoffs, and human-selected direction before Spec.
+Add `qrspi/` to the project's `.gitignore` — Init checks for this and offers to add the entry. Uncommitted artifacts otherwise show up as a dirty tree and the helper reports a `dirty-tree` finding on every command.
 
-### Completion
-
-Once the final review passes, helper-assisted mode may offer to stop tracking the feature as active. This is advisory bookkeeping only; it does not delete the workflow artifacts. Interactive-only mode reports completion without state tracking. The workflow never cleans up `./qrspi/<feature>/` itself; disposing of any artifact there, done or not, is your call.
+Some runtimes follow `.gitignore` themselves, so the same entry that hides `qrspi/` from git also hides it from the agent that needs to read it; if yours does, add an unhide rule to that runtime's own ignore file — see [Running with your agent](#running-with-your-agent) for IBM Bob's.
 
 ## How to run this well
 
@@ -123,81 +115,115 @@ Autoloop records its position through the helper before acting, so an interrupte
 
 ## Installation
 
-### Portable package
+The package root contains `skills/` and `agents/` directories; a runtime that can discover `SKILL.md` files can load the workflow from that layout. This contract is runtime-neutral — each runtime supplies its own fresh context, tool restrictions, and human gates for a role, since a prompt alone can't enforce them.
 
-The package root contains `skills/` and `agents/` directories. A runtime that can discover `SKILL.md` files can load the workflow from that layout. The portable package manifest is `plugin.json`; it identifies the package without changing skill names, agent names, or the `qrspi/` workspace.
+### Installing with the helper (recommended)
 
-### Runtime adapters
-
-The workflow contract is runtime-neutral: skills orchestrate stages, role definitions describe isolated work, artifacts record durable outputs, and humans approve transitions. Each runtime must supply the capabilities a role needs, including fresh context, tool restrictions, filesystem access, durable writes, and human gates. A prompt describes these requirements but cannot create a runtime-enforced security boundary by itself.
-
-#### Claude Code
-
-Claude Code loads the existing `.claude-plugin/plugin.json` package entry and its named agents. From a source checkout, link the repository into the workspace's Claude plugin location:
-
-```bash
-git clone <repository-url> <path-to-qrspi-x>
-ln -s <path-to-qrspi-x> <workspace>/.claude/skills/qrspi-x
-```
-
-#### Codex and IBM Bob package links
-
-For runtimes that use workspace-local skill or plugin directories, the same checkout can be linked into the corresponding runtime location:
-
-```bash
-ln -s <path-to-qrspi-x> <workspace>/.agents/skills/qrspi-x
-ln -s <path-to-qrspi-x> <workspace>/.bob/plugins/qrspi-x
-```
-
-#### Codex
-
-Codex can discover the nested skill directories by finding `SKILL.md` files under `skills/`. When named-agent registration is unavailable, the caller uses the package-relative `agents/*.md` definition with a fresh context and the narrowest available tools. If the runtime cannot enforce one of those capabilities, the corresponding isolation or permission guarantee is degraded rather than assumed.
-
-#### IBM Bob
-
-IBM Bob can use the Claude-compatible plugin directory structure for distributing the nested skills and named agents. Bob's discovery scoping remains runtime-specific; it is not a prerequisite for the portable workflow contract.
-
-The package-relative layout is shared across runtimes; the discovery and named-agent behavior above are adapters, not new QRSPI names or paths. If linking is not convenient, copy the checkout into the appropriate runtime location and repeat the copy after pulling updates.
-
-On Windows, use a directory junction (`mklink /J`) if available. Use the appropriate workspace or home-level location for the runtime you are configuring. Once the links or copies exist, the `qrspi-x:<skill>` skills and their bundled agents are available. No npm package or helper CLI is required for the normal human-gated workflow.
-
-### Optional helper (all runtimes)
-
-Use Node 22 or newer for the optional helper CLI.
-
-#### Local development install
-
-The npm package is not published yet. From a source checkout:
-
-```bash
-cd tools
-npm ci
-npm run build
-npm link
-```
-
-This registers the local `@ebullient/qrspi-x` package globally and makes its `qrspi-x` binary available on your `PATH`. The linked command runs the bundled file at `tools/dist/qrspi-x.mjs`; after changing TypeScript under `tools/src/`, run `npm run build` again.
-
-If you are testing the helper as a dependency of another local project, run `npm link @ebullient/qrspi-x` from that project's directory after creating the global link above.
-
-To remove the local global link:
-
-```bash
-npm unlink -g @ebullient/qrspi-x
-```
-
-### Published helper install
-
-After the first release, the normal user install will be:
+Use Node 22 or newer.
 
 ```bash
 npm i -g @ebullient/qrspi-x
+qrspi-x plugin install
 ```
 
-Releases are produced explicitly from the repository's manual release workflow and published to npm.
+`plugin install` downloads and verifies the latest release into `~/.qrspi/plugin`, a central copy shared by every agent. Then run `plugin init --agent <claude|codex|bob>` to place that content (symlinking, falling back to copying) at one agent's fixed location — see [Running with your agent](#running-with-your-agent) for the exact commands.
+
+For later maintenance:
+
+```bash
+qrspi-x plugin update
+qrspi-x plugin status
+```
+
+`plugin update` re-runs the install and re-places every already-initialized agent. `plugin status` reports what's installed and whether a newer release exists, without changing anything. `plugin remove --agent <claude|codex|bob>` removes one agent's placement — see [Running with your agent](#running-with-your-agent) for the exact commands.
+
+Beyond installation, the helper is only required for the [autoloop](#optional-autoloop) skill — see [Optional helper](#optional-helper) above for what the workflow gains from having it available, and [CONTRIBUTING.md](CONTRIBUTING.md#helper-development) to run the CLI from a source checkout instead of the published package.
+
+### Manual install (no npm)
+
+An alternative to the helper above: clone the repository, then either symlink or copy it into each runtime's plugin location directly. Use this if you're on a source checkout, can't install from npm, or are contributing to the package itself. Use one approach or the other for a given agent, not both.
+
+Symlink is the better default — it tracks `git pull` automatically. Copy instead for a pinned snapshot, or if your runtime can't follow a symlink; repeat the copy after each update. On Windows, use a directory junction (`mklink /J`) in place of `ln -s`. See [Running with your agent](#running-with-your-agent) for the exact commands.
+
+## Running with your agent
+
+Jump to: [Claude Code](#claude-code) · [Codex](#codex) · [IBM Bob](#ibm-bob)
+
+### Claude Code
+
+Claude Code loads the existing `.claude-plugin/plugin.json` package entry and its named agents.
+
+```bash
+qrspi-x plugin init --agent claude
+```
+
+```bash
+# or, manual install from a source checkout:
+git clone <repository-url> <path-to-qrspi-x>
+mkdir -p ~/.claude/skills
+ln -s <path-to-qrspi-x> ~/.claude/skills/qrspi-x
+# or: cp -R <path-to-qrspi-x> ~/.claude/skills/qrspi-x
+```
+
+To remove a helper-managed placement:
+
+```bash
+qrspi-x plugin remove --agent claude
+```
+
+### Codex
+
+Codex can discover the nested skill directories by finding `SKILL.md` files under `skills/`.
+
+```bash
+qrspi-x plugin init --agent codex
+```
+
+```bash
+# or, manual install from a source checkout:
+git clone <repository-url> <path-to-qrspi-x>
+mkdir -p ~/.agents/skills
+ln -s <path-to-qrspi-x> ~/.agents/skills/qrspi-x
+# or: cp -R <path-to-qrspi-x> ~/.agents/skills/qrspi-x
+```
+
+When named-agent registration is unavailable, the caller uses the package-relative `agents/*.md` definition with a fresh context and the narrowest available tools. If the runtime cannot enforce one of those capabilities, the corresponding isolation or permission guarantee is degraded rather than assumed.
+
+To remove a helper-managed placement:
+
+```bash
+qrspi-x plugin remove --agent codex
+```
+
+### IBM Bob
+
+IBM Bob can use the Claude-compatible plugin directory structure for distributing the nested skills and named agents.
+
+```bash
+qrspi-x plugin init --agent bob
+```
+
+```bash
+# or, manual install from a source checkout:
+git clone <repository-url> <path-to-qrspi-x>
+mkdir -p ~/.bob/plugins
+ln -s <path-to-qrspi-x> ~/.bob/plugins/qrspi-x
+# or: cp -R <path-to-qrspi-x> ~/.bob/plugins/qrspi-x
+```
+
+Bob follows `.gitignore`, so the same entry that hides `qrspi/` from git (see [Workspace and artifacts](#workspace-and-artifacts)) also hides it from Bob. Unhide it by adding to `.bobignore`:
+
+```text
+!qrspi
+!qrspi/**
+```
+
+To remove a helper-managed placement:
+
+```bash
+qrspi-x plugin remove --agent bob
+```
+
+## Contributing
 
 For maintainer checks, helper development, and plugin contribution conventions, see [CONTRIBUTING.md](CONTRIBUTING.md).
-
-## See also
-
-- [Everything We Got Wrong About Research-Plan-Implement](https://www.youtube.com/watch?v=YwZR6tc7qYg) — Dexter Horthy's retrospective this workflow is built from
