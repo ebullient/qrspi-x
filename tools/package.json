@@ -1,6 +1,6 @@
 {
   "name": "@ebullient/qrspi-x",
-  "version": "0.10.1",
+  "version": "0.10.2",
   "description": "CLI helper for the QRSPI-X agent workflow plugin",
   "keywords": [
     "qrspi",

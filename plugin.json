@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "qrspi-x",
-  "version": "0.10.1",
+  "version": "0.10.2",
   "description": "Portable implementation of QRSPI using skills and role definitions",
   "author": {
     "name": "Erin Schnabel"

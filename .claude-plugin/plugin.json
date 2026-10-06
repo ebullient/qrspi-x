@@ -1,7 +1,7 @@
 {
   "name": "qrspi-x",
   "description": "Modified implementation of QRSPI, using a mixture of skills and agents",
-  "version": "0.10.1",
+  "version": "0.10.2",
   "author": {
     "name": "Erin Schnabel"
   },
