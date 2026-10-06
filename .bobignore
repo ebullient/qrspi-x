@@ -1,2 +1,3 @@
 # Allow QRSPI workflow artifacts — gitignored but not sensitive
-!qrspi
+!qrspi/
+!qrspi/**
