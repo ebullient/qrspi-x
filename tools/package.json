@@ -1,7 +1,21 @@
 {
   "name": "@ebullient/qrspi-x",
   "version": "0.10.0",
+  "description": "CLI helper for the QRSPI-X agent workflow plugin",
+  "keywords": [
+    "qrspi",
+    "cli",
+    "workflow",
+    "agent",
+    "plugin"
+  ],
   "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "github:ebullient/qrspi-x",
+    "directory": "tools"
+  },
+  "bugs": "https://github.com/ebullient/qrspi-x/issues",
   "type": "module",
   "bin": {
     "qrspi-x": "dist/qrspi-x.mjs"
