@@ -254,7 +254,15 @@ describe("cli", () => {
         );
 
         expect(exitCode).toBe(1);
-        expect(stdout).toHaveLength(1);
+        // A progress line now fires before resolveRelease fails on the
+        // invalid tag, then the failure's own text line is printed. Exact
+        // wording isn't the point of this test (that's plugin.test.ts's
+        // job) — just that --release reached runInstall and something
+        // was reported before and after.
+        expect(stdout.length).toBeGreaterThanOrEqual(2);
+        expect(stdout.some((line) => line.includes("not-a-real-tag"))).toBe(
+            true,
+        );
     });
 
     it("dispatches plugin init and passes --agent through", async () => {
@@ -380,7 +388,13 @@ describe("cli", () => {
         // probing against the real home directory. runUpdate's own
         // behavior is covered in plugin.test.ts, not re-tested here.
         expect(exitCode).toBe(1);
-        expect(stdout).toHaveLength(1);
+        // Same progress-then-failure shape as the install dispatch test:
+        // runUpdate forwards onProgress into its runInstall call. Exact
+        // wording is plugin.test.ts's job, not this dispatch test's.
+        expect(stdout.length).toBeGreaterThanOrEqual(2);
+        expect(stdout.some((line) => line.includes("not-a-real-tag"))).toBe(
+            true,
+        );
     });
 
     it("dispatches plugin update and passes --force through as a boolean flag", async () => {
@@ -403,7 +417,13 @@ describe("cli", () => {
         // covered in plugin.test.ts, not re-tested here.
         expect(exitCode).toBe(1);
         expect(stderr).toEqual([]);
-        expect(stdout).toHaveLength(1);
+        // Same progress-then-failure shape as the other update dispatch
+        // test: runUpdate forwards onProgress into its runInstall call.
+        // Exact wording is plugin.test.ts's job, not this dispatch test's.
+        expect(stdout.length).toBeGreaterThanOrEqual(2);
+        expect(stdout.some((line) => line.includes("not-a-real-tag"))).toBe(
+            true,
+        );
     });
 
     it("dispatches plugin remove and passes --agent and --force through", async () => {

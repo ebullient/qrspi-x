@@ -118,6 +118,26 @@ describe("plugin install", () => {
         );
     });
 
+    it("reports progress before each stage so a slow download doesn't look hung", async () => {
+        const github = fakeGitHub({});
+        const staging = fakeStaging({});
+        const onProgress = vi.fn();
+
+        const result = await runInstall({}, { github, staging, onProgress });
+
+        expect(result.exitCode).toBe(0);
+        // Checks shape and ordering (resolve -> download -> verify ->
+        // unpack), not exact wording, so a copy tweak doesn't break this.
+        const lines = onProgress.mock.calls.map((call) => call[0] as string);
+        expect(lines).toHaveLength(4);
+        expect(lines.every((line) => line.length > 0)).toBe(true);
+        expect(lines[0]).toMatch(/resolv/i);
+        expect(lines[1]).toMatch(/download/i);
+        expect(lines[1]).toContain("1.0.0");
+        expect(lines[2]).toMatch(/verif/i);
+        expect(lines[3]).toMatch(/unpack|extract|install/i);
+    });
+
     it("passes an explicit --release through to resolveRelease (deliberate downgrade)", async () => {
         const github = fakeGitHub({
             resolveRelease: { ok: true, tag: "1.0.0" },

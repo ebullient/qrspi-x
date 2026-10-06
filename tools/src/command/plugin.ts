@@ -145,11 +145,16 @@ export type PluginInstallOpts = {
     release?: string;
 };
 
+export type ProgressFn = (line: string) => void;
+
+const noopProgress: ProgressFn = () => {};
+
 export type PluginInstallServices = {
     execFile?: ExecFileFn;
     homeDir?: string;
     github?: GitHub;
     staging?: Staging;
+    onProgress?: ProgressFn;
 };
 
 /**
@@ -160,6 +165,12 @@ export type PluginInstallServices = {
  * `Staging.download`/`extractAndCommit` are split exactly so this
  * ordering can be enforced here rather than inside the staging module,
  * which has no attestation concept of its own.
+ *
+ * `onProgress` fires once before each of the four stages below. It's a
+ * UX-only signal for an interactive terminal (this command is the one
+ * place in the CLI with a multi-second network round trip, so silence
+ * here reads as a hang) — it carries no state and failures are reported
+ * through the returned `CommandResult` exactly as before.
  */
 export async function runInstall(
     opts: PluginInstallOpts,
@@ -169,22 +180,30 @@ export async function runInstall(
     const home = services.homeDir ?? homedir();
     const targetDir = join(home, ".qrspi", "plugin");
     const repoSlug = `${QRSPI_X_REPO.owner}/${QRSPI_X_REPO.repo}`;
+    const onProgress = services.onProgress ?? noopProgress;
 
     const github =
         services.github ?? gitHubAt(QRSPI_X_REPO, home, { execFile });
     const staging =
         services.staging ?? stagingAt(targetDir, repoSlug, home, { execFile });
 
+    onProgress(
+        opts.release
+            ? `Resolving release ${opts.release}...`
+            : "Resolving latest eligible release...",
+    );
     const resolved = await github.resolveRelease(opts.release);
     if (!resolved.ok) {
         return fail(resolved.reason, resolved.message);
     }
 
+    onProgress(`Downloading release ${resolved.tag}...`);
     const downloadResult = await staging.download(resolved.tag);
     if (!downloadResult.ok) {
         return fail(downloadResult.reason, downloadResult.message);
     }
 
+    onProgress("Verifying attestation...");
     const attestation = await github.verifyAttestation(
         downloadResult.archivePath,
     );
@@ -193,6 +212,7 @@ export async function runInstall(
         return fail(attestation.reason, attestation.message);
     }
 
+    onProgress(`Unpacking into ${targetDir}...`);
     const staged = await staging.extractAndCommit(
         downloadResult.archivePath,
         resolved.tag,
@@ -400,6 +420,7 @@ export type PluginUpdateServices = {
     staging?: Staging;
     place?: typeof placeTarget;
     clearUnmanaged?: typeof clearUnmanagedTarget;
+    onProgress?: ProgressFn;
 };
 
 type AgentUpdateOutcome =
@@ -477,6 +498,7 @@ export async function runUpdate(
             homeDir: home,
             github: services.github,
             staging: services.staging,
+            onProgress: services.onProgress,
         },
     );
     if (installResult.exitCode !== 0) {

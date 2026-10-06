@@ -86,7 +86,7 @@ export async function main(
         validateOptions(command, positionals, options);
         const result =
             command === "plugin"
-                ? await dispatchPlugin(positionals, options)
+                ? await dispatchPlugin(positionals, options, io)
                 : command === "import"
                   ? await dispatchImport(
                         positionals,
@@ -359,11 +359,23 @@ async function dispatchImport(
 async function dispatchPlugin(
     positionals: string[],
     options: Options,
+    io: Io,
 ): Promise<CommandResult> {
     const action = singleAction("plugin", positionals);
     switch (action) {
-        case "install":
-            return plugin.runInstall({ release: optional(options, "release") });
+        case "install": {
+            const result = await plugin.runInstall(
+                { release: optional(options, "release") },
+                { onProgress: io.stdout },
+            );
+            if (result.exitCode === 0 && typeof result.text === "string") {
+                return {
+                    ...result,
+                    text: `${result.text} Use "qrspi-x plugin init --agent <claude|codex|bob>" to add it to the agent(s) of your choice.`,
+                };
+            }
+            return result;
+        }
         case "init":
             return plugin.runInit({
                 agent: required(options, "agent"),
@@ -374,10 +386,13 @@ async function dispatchPlugin(
         case "status":
             return plugin.runStatus();
         case "update":
-            return plugin.runUpdate({
-                release: optional(options, "release"),
-                force: options.force === true,
-            });
+            return plugin.runUpdate(
+                {
+                    release: optional(options, "release"),
+                    force: options.force === true,
+                },
+                { onProgress: io.stdout },
+            );
         case "remove":
             return plugin.runRemove({
                 agent: required(options, "agent"),
