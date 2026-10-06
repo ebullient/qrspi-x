@@ -25,6 +25,15 @@ The agent will ask you to describe the feature in your own words — a sentence 
 
 See [Installation](#installation) for the manual (no-npm) install path and other options.
 
+## The problem
+
+Coding agents doing Research-Plan-Implement on a real feature tend to fail in the same four ways, as Dexter Horthy's retrospective lays out (['Everything We Got Wrong About Research-Plan-Implement'](https://www.youtube.com/watch?v=YwZR6tc7qYg)):
+
+- **Research gets biased by the feature idea.** Once the agent knows what you want to build, "research" quietly turns into justifying that idea instead of checking it against the facts.
+- **Plans are unreadable.** A plan detailed enough to actually implement is often as long as the code it produces — nobody reads a 1,000-line plan closely enough to catch its mistakes.
+- **Layer-by-layer plans hide integration bugs.** Building all the database work, then all the service work, then all the API work looks tidy on paper, but the pieces don't actually fit together until the very end, which is the worst time to find out they don't.
+- **One prompt does too much.** Research, planning, and implementation crammed into a single conversation overload the model and blur which part of the output to trust.
+
 ## What QRSPI-X does
 
 QRSPI-X gives coding-agent work a sequence of small, human-approved stages:
@@ -33,7 +42,7 @@ QRSPI-X gives coding-agent work a sequence of small, human-approved stages:
 (Explore) → Init → Query ⇄ Research → [Shape] → Spec → Plan → Implement → Review
 ```
 
-Each stage has one job. The human approves the result before the workflow advances, and can send the work back to an earlier stage when the request, evidence, design, or plan needs revision. This is QRSPI-X's answer to four recurring problems with plain Research-Plan-Implement, from Dexter Horthy's retrospective (['Everything We Got Wrong About Research-Plan-Implement'](https://www.youtube.com/watch?v=YwZR6tc7qYg)):
+Each stage has one job. The human approves the result before the workflow advances, and can send the work back to an earlier stage when the request, evidence, design, or plan needs revision. This is how QRSPI-X answers each problem above:
 
 - **Research gets biased by the feature idea** → Query and Research each run in their own isolated subagent with limited tools. Query only gets `Write` — it cannot read the codebase even if it tried. Neither subagent sees the other's reasoning or the main conversation.
 - **Plans are unreadable** → the plan has two layers: a short phase overview (`plan.md`) you can read in one pass, and per-phase detail files you open when implementing that phase.
