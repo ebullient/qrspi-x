@@ -92,7 +92,7 @@ The helper (see [Optional helper](#optional-helper)) also keeps `decisions.md`, 
 
 Add `qrspi/` to the project's `.gitignore`. Init checks for this and offers to add the entry. Uncommitted artifacts otherwise show up as a dirty tree, and the helper reports a `dirty-tree` finding on every command.
 
-Some runtimes, like IBM Bob, follow `.gitignore` themselves, so the same entry that hides `qrspi/` from git also hides it from the agent that needs to read it; you may need to add an agent-specific rule to unhide it. See [Running with your agent](#running-with-your-agent) for details.
+Some runtimes, like IBM Bob, respect `.gitignore`, so the same entry that hides `qrspi/` from git also hides it from the agent; you may need to add an agent-specific rule to unhide it. See [Running with your agent](#running-with-your-agent) for details.
 
 ## How to run this well
 
