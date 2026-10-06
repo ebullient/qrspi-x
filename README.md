@@ -15,13 +15,13 @@ qrspi-x plugin install
 qrspi-x plugin init --agent claude   # or codex, or bob
 ```
 
-Then, in your project, talk to your agent and start the workflow with a short name for what you're building (letters, numbers, and dashes — this becomes a folder name, not a file you write first):
+Then, in your project, talk to your agent and start the workflow with a short name for what you're building (letters, numbers, and dashes; this becomes a folder name, not a file you write first):
 
 ```text
 /qrspi-x:workflow add-refresh-token-rotation
 ```
 
-The agent will ask you to describe the feature in your own words — a sentence or a paragraph, whatever you've got. That's the whole "getting started" step: no file to write by hand, no form to fill out first. Starting from a GitHub issue or PR instead? `qrspi-x import <number>` pulls its title and description in as the starting request for you. From there, see [The workflow](#the-workflow) for what happens at each stage and [How to run this well](#how-to-run-this-well) for tips on using it.
+The agent will ask you to describe the feature in your own words: a sentence or a paragraph, whatever you've got. That's the whole "getting started" step: no file to write by hand, no form to fill out first. Starting from a GitHub issue or PR instead? `qrspi-x import <number>` pulls its title and description in as the starting request for you. From there, see [The workflow](#the-workflow) for what happens at each stage and [How to run this well](#how-to-run-this-well) for tips on using it.
 
 See [Installation](#installation) for the manual (no-npm) install path and other options.
 
@@ -30,7 +30,7 @@ See [Installation](#installation) for the manual (no-npm) install path and other
 Research-Plan-Implement is a common pattern for working with a coding agent on a real feature: have it research the codebase, write a plan, then build it. In practice, that pattern tends to fail in the same four ways, as Dexter Horthy's retrospective lays out (['Everything We Got Wrong About Research-Plan-Implement'](https://www.youtube.com/watch?v=YwZR6tc7qYg)):
 
 - **Research gets biased by the feature idea.** Once the agent knows what you want to build, "research" quietly turns into justifying that idea instead of checking it against the facts.
-- **Plans are unreadable.** A plan detailed enough to actually implement is often as long as the code it produces — nobody reads a 1,000-line plan closely enough to catch its mistakes.
+- **Plans are unreadable.** A plan detailed enough to actually implement is often as long as the code it produces, so nobody reads a 1,000-line plan closely enough to catch its mistakes.
 - **Layer-by-layer plans hide integration bugs.** Building all the database work, then all the service work, then all the API work looks tidy on paper, but the pieces don't actually fit together until the very end, which is the worst time to find out they don't.
 - **One prompt does too much.** Research, planning, and implementation crammed into a single conversation overload the model and blur which part of the output to trust.
 
@@ -44,35 +44,35 @@ QRSPI-X gives coding-agent work a sequence of small, human-approved stages:
 
 Each stage has one job. The human approves the result before the workflow advances, and can send the work back to an earlier stage when the request, evidence, design, or plan needs revision. This is how QRSPI-X answers each problem above:
 
-- **Research gets biased by the feature idea** → Query and Research each run in their own isolated subagent with limited tools. Query only gets `Write` — it cannot read the codebase even if it tried. Neither subagent sees the other's reasoning or the main conversation.
+- **Research gets biased by the feature idea** → Query and Research each run in their own isolated subagent with limited tools. Query only gets `Write`; it cannot read the codebase even if it tried. Neither subagent sees the other's reasoning or the main conversation.
 - **Plans are unreadable** → the plan has two layers: a short phase overview (`plan.md`) you can read in one pass, and per-phase detail files you open when implementing that phase.
 - **Layer-by-layer plans hide integration bugs** → you approve phase boundaries *before* `plan.md` is written, not after. You are approving how the work is cut up, not just what is inside each piece.
 - **One prompt does too much** → each stage is its own skill with one job, run fresh instead of piled into a single prompt.
 
 ## The workflow
 
-| Phase | What it does | Command | Runs as |
+| Stage | What it does | Command | Runs as |
 |---|---|---|---|
-| Workflow | Walks you through every phase below in order, prompting you at each step | `/qrspi-x:workflow <feature-name>` | main conversation |
+| Workflow | Walks you through every stage below in order, prompting you at each step | `/qrspi-x:workflow <feature-name>` | main conversation |
 | Explore *(optional)* | Look around an area of the codebase before a feature request exists; suggest candidate directions | `/qrspi-x:explore` | subagent, broad tools |
 | Init | Write down the feature request as-is, into `request.md` | `/qrspi-x:init` | main conversation |
-| Query | Generate questions from the request — no codebase access | `/qrspi-x:query` | isolated subagent, `Write`-only |
-| Research | Answer those questions by reading the codebase — facts only, no opinions | `/qrspi-x:research` | isolated subagent, full read tools |
+| Query | Generate questions from the request (no codebase access) | `/qrspi-x:query` | isolated subagent, `Write`-only |
+| Research | Answer those questions by reading the codebase (facts only, no opinions) | `/qrspi-x:research` | isolated subagent, full read tools |
 | Shape *(optional)* | Compare viable implementation approaches using the request and research context | `/qrspi-x:shape` | isolated subagent, broad read tools |
 | Spec | Define what changes and what does not | `/qrspi-x:spec` | main conversation |
 | Plan | Break the spec into small, ordered steps; approve phase boundaries before files are written | `/qrspi-x:plan` | main conversation |
 | Implement | Execute one step at a time, commit per phase or per step, and pause for approval | `/qrspi-x:implement` | main conversation |
 | Review | Adversarially check the change against the spec and plan | `/qrspi-x:review` | isolated subagent(s), full read tools |
 
-Run `/qrspi-x:workflow` (see [Quick start](#quick-start)) and it captures your feature request in Init, then carries you through the rest of the phases below — you normally won't need their individual commands. Use one directly only to jump to a specific phase, rerun it, or resume after an interruption.
+Run `/qrspi-x:workflow` (see [Quick start](#quick-start)) and it captures your feature request in Init, then carries you through the rest of the stages below; you normally won't need their individual commands. Use one directly only to jump to a specific stage, rerun it, or resume after an interruption.
 
 Query and Research can loop: if research surfaces a question the code cannot answer, return to Query and then Research. Shape is optional; use it when multiple implementation approaches remain. Everything after Spec runs in order, but an approval point can send the work back to Research, Shape, Spec, or Plan.
 
-Once the final review passes, helper-assisted mode may offer to stop tracking the feature as active — advisory bookkeeping only, it does not delete the workflow artifacts. Interactive-only mode reports completion without state tracking. The workflow never cleans up `./qrspi/<feature>/` itself; disposing of any artifact there, done or not, is your call.
+Plan turns the spec into an implementation plan broken into _phases_, small, ordered groups of steps, each one a reviewable unit rather than a wall of detail. You approve the phase boundaries before `plan.md` is written, so you're approving how the work is cut up, not just what's in each piece; Implement then builds one phase at a time, and Review checks the result against the spec.
 
 ## Workspace and artifacts
 
-The workflow creates artifacts under `./qrspi/<feature>/` — disposable scaffolding, not the source of truth:
+The workflow creates artifacts under `./qrspi/<feature>/`, disposable scaffolding, not the source of truth:
 
 ```text
 qrspi/<feature>/
@@ -90,19 +90,21 @@ qrspi/<feature>/
 
 The helper (see [Optional helper](#optional-helper)) also keeps `decisions.md`, `history.jsonl`, and `loop-state.json` here for its own bookkeeping.
 
-Add `qrspi/` to the project's `.gitignore` — Init checks for this and offers to add the entry. Uncommitted artifacts otherwise show up as a dirty tree and the helper reports a `dirty-tree` finding on every command.
+Add `qrspi/` to the project's `.gitignore`. Init checks for this and offers to add the entry. Uncommitted artifacts otherwise show up as a dirty tree, and the helper reports a `dirty-tree` finding on every command.
 
-Some runtimes follow `.gitignore` themselves, so the same entry that hides `qrspi/` from git also hides it from the agent that needs to read it; if yours does, add an unhide rule to that runtime's own ignore file — see [Running with your agent](#running-with-your-agent) for IBM Bob's.
+Some runtimes, like IBM Bob, follow `.gitignore` themselves, so the same entry that hides `qrspi/` from git also hides it from the agent that needs to read it; you may need to add an agent-specific rule to unhide it. See [Running with your agent](#running-with-your-agent) for details.
 
 ## How to run this well
 
-The tooling does not enforce all of these practices. They are what make the process work in practice.
+**Use Explore when your idea is still too rough to write down.** Point it at an area of the codebase and let it poke around and suggest candidate directions, to turn a fuzzy notion into a starting request you can hand to Init.
 
-**Use Query and Research to find the real intent, not just to check a finished task.** No fully formed feature request yet? Run them against a rough idea and use the results to rewrite `request.md` before Spec.
+**Use Query and Research to clarify the real intent.** The Query ↔ Research cycle usually surfaces questions that expose a gap or gray area in scope or intent. Run it against a rough idea and use the answers to refine `request.md` before Spec.
 
 **Review independently.** Isolation removes the prior conversation from a role's context, but it does not remove the model's blind spots. Run final Review in a different harness or with a different model than the one that ran Implement. The runtime chooses the model; QRSPI-X does not require a particular provider or model name. Claude Code users can set `CLAUDE_CODE_SUBAGENT_MODEL` or pass a model override per invocation.
 
 **Review the code and diff, not only the plan.** Skim the per-phase plan, inspect the actual diff at each phase boundary, and do one full pass at the end for how the phases fit together.
+
+**A gap found mid-implementation doesn't mean starting over.** Implement uncovering work the spec didn't anticipate is an ordinary outcome of doing the work, not a failure. Update the spec, have Plan insert a new phase to cover the gap, check whether any later phase actually depends on it, and continue; you don't have to invalidate the whole plan or redo the phase already in progress.
 
 ## Optional helper
 
@@ -145,7 +147,7 @@ Autoloop records its position through the helper before acting, so an interrupte
 
 ## Installation
 
-The package root contains `skills/` and `agents/` directories; a runtime that can discover `SKILL.md` files can load the workflow from that layout. This contract is runtime-neutral — each runtime supplies its own fresh context, tool restrictions, and human gates for a role, since a prompt alone can't enforce them.
+The package root contains `skills/` and `agents/` directories; a runtime that can discover `SKILL.md` files can load the workflow from that layout. This contract is runtime-neutral: each runtime supplies its own fresh context, tool restrictions, and human gates for a role, since a prompt alone can't enforce them.
 
 ### Installing with the helper (recommended)
 
@@ -156,7 +158,7 @@ npm i -g @ebullient/qrspi-x
 qrspi-x plugin install
 ```
 
-`plugin install` downloads and verifies the latest release into `~/.qrspi/plugin`, a central copy shared by every agent. Then run `plugin init --agent <claude|codex|bob>` to place that content (symlinking, falling back to copying) at one agent's fixed location — see [Running with your agent](#running-with-your-agent) for the exact commands.
+`plugin install` downloads and verifies the latest release into `~/.qrspi/plugin`, a central copy shared by every agent. Then run `plugin init --agent <claude|codex|bob>` to place that content (symlinking, falling back to copying) at one agent's fixed location. See [Running with your agent](#running-with-your-agent) for the exact commands.
 
 For later maintenance:
 
@@ -165,15 +167,15 @@ qrspi-x plugin update
 qrspi-x plugin status
 ```
 
-`plugin update` re-runs the install and re-places every already-initialized agent. `plugin status` reports what's installed and whether a newer release exists, without changing anything. `plugin remove --agent <claude|codex|bob>` removes one agent's placement — see [Running with your agent](#running-with-your-agent) for the exact commands.
+`plugin update` re-runs the install and re-places every already-initialized agent. `plugin status` reports what's installed and whether a newer release exists, without changing anything. `plugin remove --agent <claude|codex|bob>` removes one agent's placement. See [Running with your agent](#running-with-your-agent) for the exact commands.
 
-Beyond installation, the helper is only required for the [autoloop](#optional-autoloop) skill — see [Optional helper](#optional-helper) above for what the workflow gains from having it available, and [CONTRIBUTING.md](CONTRIBUTING.md#helper-development) to run the CLI from a source checkout instead of the published package.
+Beyond installation, the helper is only required for the [autoloop](#optional-autoloop) skill. See [Optional helper](#optional-helper) above for what the workflow gains from having it available, and [CONTRIBUTING.md](CONTRIBUTING.md#helper-development) to run the CLI from a source checkout instead of the published package.
 
 ### Manual install (no npm)
 
 An alternative to the helper above: clone the repository, then either symlink or copy it into each runtime's plugin location directly. Use this if you're on a source checkout, can't install from npm, or are contributing to the package itself. Use one approach or the other for a given agent, not both.
 
-Symlink is the better default — it tracks `git pull` automatically. Copy instead for a pinned snapshot, or if your runtime can't follow a symlink; repeat the copy after each update. On Windows, use a directory junction (`mklink /J`) in place of `ln -s`. See [Running with your agent](#running-with-your-agent) for the exact commands.
+Symlink is the better default: it tracks `git pull` automatically. Copy instead for a pinned snapshot, or if your runtime can't follow a symlink; repeat the copy after each update. On Windows, use a directory junction (`mklink /J`) in place of `ln -s`. See [Running with your agent](#running-with-your-agent) for the exact commands.
 
 ## Running with your agent
 
@@ -243,7 +245,7 @@ ln -s <path-to-qrspi-x> ~/.bob/plugins/qrspi-x
 
 Bob does not currently namespace skills by plugin: invoke `/qrspi-x:implement` as `/implement`, and likewise for the other skills.
 
-Bob can follow `.gitignore` (Bob settings -> Chat -> Respect .gitignore, ~/.bob/settings/settings.json `"session": {""respectGitInore": true}`), so the same entry that hides `qrspi/` from git (see [Workspace and artifacts](#workspace-and-artifacts)) also hides it from Bob. Unhide it by adding to `.bobignore`:
+Bob can follow `.gitignore` (in Bob IDE: Bob Settings → `Chat` → `Respect .gitignore`, in `~/.bob/settings/settings.json`: `"session": {""respectGitInore": true}`). If that is enabled, the same entry that hides `qrspi/` from git (see [Workspace and artifacts](#workspace-and-artifacts)) also hides it from Bob. Unhide it by adding to `.bobignore`:
 
 ```text
 !qrspi
