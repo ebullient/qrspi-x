@@ -42,25 +42,44 @@ Each stage has one job. The human approves the result before the workflow advanc
 
 ## The workflow
 
-| Phase | What it does | Runs as |
-|---|---|---|
-| Explore *(optional)* | Look around an area of the codebase before a feature request exists; suggest candidate directions | subagent, broad tools |
-| Init | Write down the feature request as-is, into `request.md` | main conversation |
-| Query | Generate questions from the request — no codebase access | isolated subagent, `Write`-only |
-| Research | Answer those questions by reading the codebase — facts only, no opinions | isolated subagent, full read tools |
-| Shape *(optional)* | Compare viable implementation approaches using the request and research context | isolated subagent, broad read tools |
-| Spec | Define what changes and what does not | main conversation |
-| Plan | Break the spec into small, ordered steps; approve phase boundaries before files are written | main conversation |
-| Implement | Execute one step at a time, commit per phase or per step, and pause for approval | main conversation |
-| Review | Adversarially check the change against the spec and plan | isolated subagent(s), full read tools |
+| Phase | What it does | Command | Runs as |
+|---|---|---|---|
+| Workflow | Walks you through every phase below in order, prompting you at each step | `/qrspi-x:workflow <feature-name>` | main conversation |
+| Explore *(optional)* | Look around an area of the codebase before a feature request exists; suggest candidate directions | `/qrspi-x:explore` | subagent, broad tools |
+| Init | Write down the feature request as-is, into `request.md` | `/qrspi-x:init` | main conversation |
+| Query | Generate questions from the request — no codebase access | `/qrspi-x:query` | isolated subagent, `Write`-only |
+| Research | Answer those questions by reading the codebase — facts only, no opinions | `/qrspi-x:research` | isolated subagent, full read tools |
+| Shape *(optional)* | Compare viable implementation approaches using the request and research context | `/qrspi-x:shape` | isolated subagent, broad read tools |
+| Spec | Define what changes and what does not | `/qrspi-x:spec` | main conversation |
+| Plan | Break the spec into small, ordered steps; approve phase boundaries before files are written | `/qrspi-x:plan` | main conversation |
+| Implement | Execute one step at a time, commit per phase or per step, and pause for approval | `/qrspi-x:implement` | main conversation |
+| Review | Adversarially check the change against the spec and plan | `/qrspi-x:review` | isolated subagent(s), full read tools |
 
-Query and Research can loop: if research surfaces a question the code cannot answer, return to Query and then Research. Shape is optional; use it when multiple implementation approaches remain. Everything after Spec runs in order, but an approval point can send the work back to Research, Shape, Spec, or Plan. Invoking the workflow skill with a feature name (see [Quick start](#quick-start)) captures the feature request in the Init step.
+Run `/qrspi-x:workflow` (see [Quick start](#quick-start)) and it captures your feature request in Init, then carries you through the rest of the phases below — you normally won't need their individual commands. Use one directly only to jump to a specific phase, rerun it, or resume after an interruption.
+
+Query and Research can loop: if research surfaces a question the code cannot answer, return to Query and then Research. Shape is optional; use it when multiple implementation approaches remain. Everything after Spec runs in order, but an approval point can send the work back to Research, Shape, Spec, or Plan.
 
 Once the final review passes, helper-assisted mode may offer to stop tracking the feature as active — advisory bookkeeping only, it does not delete the workflow artifacts. Interactive-only mode reports completion without state tracking. The workflow never cleans up `./qrspi/<feature>/` itself; disposing of any artifact there, done or not, is your call.
 
 ## Workspace and artifacts
 
-The workflow creates artifacts under `./qrspi/<feature>/`. These are disposable scaffolding, not the source of truth. Per-phase plan files live in `plans/`; `plan.md` stays alongside the other feature artifacts. When Query, Research, Shape, or Spec reruns, the artifact it replaces moves to `backups/` so no prior version is lost. An optional `background.md` can preserve human-supplied context and prior-art comparisons; it is not authoritative intent and is not automatically given to Query or Research. When Shape runs, `approach.md` records the alternatives, tradeoffs, and human-selected direction before Spec.
+The workflow creates artifacts under `./qrspi/<feature>/` — disposable scaffolding, not the source of truth:
+
+```text
+qrspi/<feature>/
+├── request.md      the feature request, from Init
+├── background.md   optional: whatever context the human brings (prior art, an Explore summary, ...), staged by Init, not given to Query or Research
+├── queries.md      Query's questions
+├── research.md     Research's answers, facts only
+├── approach.md     alternatives and tradeoffs, from optional Shape
+├── spec.md         what changes and what does not
+├── plan.md         phase overview
+├── plans/          per-phase plan detail files
+├── reviews/        Review's reports, one file per label
+└── backups/        prior queries/research/approach/spec, kept whenever one of those reruns
+```
+
+The helper (see [Optional helper](#optional-helper)) also keeps `decisions.md`, `history.jsonl`, and `loop-state.json` here for its own bookkeeping.
 
 Add `qrspi/` to the project's `.gitignore` — Init checks for this and offers to add the entry. Uncommitted artifacts otherwise show up as a dirty tree and the helper reports a `dirty-tree` finding on every command.
 
