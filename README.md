@@ -27,7 +27,7 @@ See [Installation](#installation) for the manual (no-npm) install path and other
 
 ## The problem
 
-Coding agents doing Research-Plan-Implement on a real feature tend to fail in the same four ways, as Dexter Horthy's retrospective lays out (['Everything We Got Wrong About Research-Plan-Implement'](https://www.youtube.com/watch?v=YwZR6tc7qYg)):
+Research-Plan-Implement is a common pattern for working with a coding agent on a real feature: have it research the codebase, write a plan, then build it. In practice, that pattern tends to fail in the same four ways, as Dexter Horthy's retrospective lays out (['Everything We Got Wrong About Research-Plan-Implement'](https://www.youtube.com/watch?v=YwZR6tc7qYg)):
 
 - **Research gets biased by the feature idea.** Once the agent knows what you want to build, "research" quietly turns into justifying that idea instead of checking it against the facts.
 - **Plans are unreadable.** A plan detailed enough to actually implement is often as long as the code it produces — nobody reads a 1,000-line plan closely enough to catch its mistakes.
