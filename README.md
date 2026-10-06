@@ -15,11 +15,13 @@ qrspi-x plugin install
 qrspi-x plugin init --agent claude   # or codex, or bob
 ```
 
-Then, in your project, with your agent:
+Then, in your project, talk to your agent and start the workflow with a short name for what you're building (letters, numbers, and dashes — this becomes a folder name, not a file you write first):
 
 ```text
 /qrspi-x:workflow add-refresh-token-rotation
 ```
+
+The agent will ask you to describe the feature in your own words — a sentence or a paragraph, whatever you've got. That's the whole "getting started" step: no file to write by hand, no form to fill out first. Starting from a GitHub issue or PR instead? `qrspi-x import <number>` pulls its title and description in as the starting request for you. From there, see [The workflow](#the-workflow) for what happens at each stage and [How to run this well](#how-to-run-this-well) for tips on using it.
 
 See [Installation](#installation) for the manual (no-npm) install path and other options.
 
@@ -197,7 +199,7 @@ qrspi-x plugin remove --agent codex
 
 ### IBM Bob
 
-IBM Bob can use the Claude-compatible plugin directory structure for distributing the nested skills and named agents.
+IBM Bob can use the portable agent plugin directory structure for distributing the nested skills and named agents.
 
 ```bash
 qrspi-x plugin init --agent bob
@@ -211,7 +213,9 @@ ln -s <path-to-qrspi-x> ~/.bob/plugins/qrspi-x
 # or: cp -R <path-to-qrspi-x> ~/.bob/plugins/qrspi-x
 ```
 
-Bob follows `.gitignore`, so the same entry that hides `qrspi/` from git (see [Workspace and artifacts](#workspace-and-artifacts)) also hides it from Bob. Unhide it by adding to `.bobignore`:
+Bob does not currently namespace skills by plugin: invoke `/qrspi-x:implement` as `/implement`, and likewise for the other skills.
+
+Bob can follow `.gitignore` (Bob settings -> Chat -> Respect .gitignore, ~/.bob/settings/settings.json `"session": {""respectGitInore": true}`), so the same entry that hides `qrspi/` from git (see [Workspace and artifacts](#workspace-and-artifacts)) also hides it from Bob. Unhide it by adding to `.bobignore`:
 
 ```text
 !qrspi
