@@ -100,13 +100,16 @@ export function stagingAt(
         releaseTag: string,
     ): Promise<ExtractAndCommitResult> {
         const workDir = dirname(archivePath);
+        // A sibling of targetDir, not under system tmp: commit() renames
+        // this into place, and rename() needs both sides on one filesystem.
+        const extractedDir = `${targetDir}.extracting-${Date.now()}`;
         try {
             const archiveBytes = await readFileBuffer(archivePath);
             const archiveHash = createHash("sha256")
                 .update(archiveBytes)
                 .digest("hex");
 
-            const extractedDir = join(workDir, "extracted");
+            await mkdir(dirname(targetDir), { recursive: true });
             await mkdir(extractedDir, { recursive: true });
             const extractResult = await extractZip(archivePath, extractedDir);
             if (!extractResult.ok) {
@@ -160,6 +163,10 @@ export function stagingAt(
             return { ok: true, manifest: stamped };
         } finally {
             await rm(workDir, { recursive: true, force: true });
+            // commit() renames extractedDir away on success, so this is a
+            // no-op then; on an early-return failure above, it removes the
+            // staged extraction that was never committed.
+            await rm(extractedDir, { recursive: true, force: true });
         }
     }
 
